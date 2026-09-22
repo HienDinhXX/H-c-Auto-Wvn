@@ -17,12 +17,11 @@
       --primary: #007aff;
       --danger: #ff3b30;
       --success: #34c759;
-      --warning: #ff9500;
       --shadow: 0 4px 16px rgba(0,0,0,0.06);
       --radius: 12px;
       --pad: 16px;
       --gap: 12px;
-      --container-max: 1200px;
+      --container-max: 100%;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -127,7 +126,7 @@
       margin-bottom: 12px;
     }
 
-    /* Bảng dữ liệu tối ưu kích thước */
+    /* Bảng Ma Trận Ngang */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -138,10 +137,10 @@
     }
 
     table {
-      width: 100%;
       border-collapse: collapse;
       font-size: 14px;
       background: #fff;
+      min-width: 100%;
     }
 
     th, td {
@@ -149,22 +148,32 @@
       text-align: left;
       border-bottom: 1px solid #efeff4;
       border-right: 1px solid #efeff4;
-      vertical-align: top;
+      vertical-align: middle;
     }
 
-    th {
-      background: #f8f8fa;
-      color: var(--muted);
+    /* Cột Tiêu đề nằm cố định bên trái */
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      background: #f8f8fa !important;
       font-weight: 600;
-      position: sticky; top: 0;
-      white-space: nowrap;
+      color: var(--text);
+      width: 140px;
+      min-width: 140px;
+      max-width: 140px;
+      z-index: 2;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
 
-    /* Ô NHẬP LIỆU BẢNG: Tự co giãn & tự xuống dòng */
+    .col-item {
+      min-width: 200px;
+      width: 200px;
+    }
+
+    /* Ô NHẬP LIỆU: Tự co giãn & tự xuống dòng */
     .cell-input {
       width: 100%;
-      min-width: 130px; /* Độ rộng tối thiểu giúp nhập dữ liệu thoải mái */
-      min-height: 46px; /* Chiều cao lớn hơn */
+      min-height: 42px;
       padding: 8px;
       font-family: inherit;
       font-size: 14px;
@@ -173,9 +182,9 @@
       border-radius: 6px;
       background: #fafafa;
       outline: none;
-      resize: vertical; /* Cho phép kéo dãn chiều cao nếu cần */
+      resize: vertical;
       overflow-y: hidden;
-      white-space: pre-wrap; /* Tự động xuống dòng */
+      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -185,16 +194,20 @@
       box-shadow: 0 0 0 2px rgba(0,122,255,0.15);
     }
 
+    .cell-input-header {
+      font-weight: 600;
+      background: #f0f8ff;
+      border-color: #b8d8ff;
+    }
+
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
     .action-btn {
-      width: auto;
+      width: 100%;
       min-height: unset;
       padding: 6px 12px;
       font-size: 12px;
-      display: inline-block;
-      margin-top: 4px;
     }
 
     .list-item-manage {
@@ -240,33 +253,19 @@
         <div class="filter-group">
           <div>
             <label for="autoLineSelect">Chọn Line</label>
-            <select id="autoLineSelect" onchange="renderAutoTable()"></select>
+            <select id="autoLineSelect" onchange="renderAutoMatrix()"></select>
           </div>
           <div>
             <label for="autoModelSelect">Chọn Model</label>
-            <select id="autoModelSelect" onchange="renderAutoTable()"></select>
+            <select id="autoModelSelect" onchange="renderAutoMatrix()"></select>
           </div>
         </div>
 
-        <button class="btn-primary" onclick="addAutoRow()" style="margin-bottom: 12px;">+ Thêm dòng mới</button>
+        <button class="btn-primary" onclick="addAutoCol()" style="margin-bottom: 12px;">+ Thêm máy mới (Thêm Cột)</button>
 
         <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th style="min-width: 120px;">Máy</th>
-                <th style="min-width: 150px;">Công dụng</th>
-                <th style="min-width: 130px;">Mã ốc hộp 1</th>
-                <th style="min-width: 110px;">Số ốc 1 bắn</th>
-                <th style="min-width: 110px;">Lực vít 1</th>
-                <th style="min-width: 130px;">Mã ốc hộp 2</th>
-                <th style="min-width: 110px;">Số ốc 2 bắn</th>
-                <th style="min-width: 110px;">Lực vít 2</th>
-                <th style="min-width: 180px;">Ghi chú</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="autoTableBody"></tbody>
+          <table id="autoMatrixTable">
+            <tbody id="autoMatrixBody"></tbody>
           </table>
         </div>
       </div>
@@ -279,28 +278,19 @@
         <div class="filter-group">
           <div>
             <label for="jigLineSelect">Chọn Line</label>
-            <select id="jigLineSelect" onchange="renderJigTable()"></select>
+            <select id="jigLineSelect" onchange="renderJigMatrix()"></select>
           </div>
           <div>
             <label for="jigModelSelect">Chọn Model</label>
-            <select id="jigModelSelect" onchange="renderJigTable()"></select>
+            <select id="jigModelSelect" onchange="renderJigMatrix()"></select>
           </div>
         </div>
 
-        <button class="btn-primary" onclick="addJigRow()" style="margin-bottom: 12px;">+ Thêm dòng mới</button>
+        <button class="btn-primary" onclick="addJigCol()" style="margin-bottom: 12px;">+ Thêm trạm mới (Thêm Cột)</button>
 
         <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th style="min-width: 130px;">Trạm</th>
-                <th style="min-width: 160px;">Tên đồ gá</th>
-                <th style="min-width: 180px;">Thông số</th>
-                <th style="min-width: 200px;">Ghi chú</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="jigTableBody"></tbody>
+          <table id="jigMatrixTable">
+            <tbody id="jigMatrixBody"></tbody>
           </table>
         </div>
       </div>
@@ -378,68 +368,92 @@
       document.getElementById('tab-' + tabName).classList.add('active');
       el.classList.add('active');
 
-      if (tabName === 'auto') renderAutoTable();
-      else if (tabName === 'jig') renderJigTable();
+      if (tabName === 'auto') renderAutoMatrix();
+      else if (tabName === 'jig') renderJigMatrix();
       else if (tabName === 'settings') renderSettings();
     }
 
-    /* Tự động tính toán chiều cao của ô textarea khi nhập dữ liệu */
     function autoResizeTextarea(el) {
       el.style.height = 'auto';
       el.style.height = (el.scrollHeight) + 'px';
     }
 
-    /* ===== TAB 1: HỌC TỰ ĐỘNG ===== */
-    function renderAutoTable() {
+    /* ===== TAB 1: HỌC TỰ ĐỘNG (DẠNG MA TRẬN) ===== */
+    const AUTO_FIELDS = [
+      { key: 'may', label: 'Máy', isHeader: true },
+      { key: 'congDung', label: 'Công dụng' },
+      { key: 'maOc1', label: 'Mã ốc hộp 1' },
+      { key: 'soOc1', label: 'Số ốc 1 bắn' },
+      { key: 'lucVit1', label: 'Lực vít 1' },
+      { key: 'maOc2', label: 'Mã ốc hộp 2' },
+      { key: 'soOc2', label: 'Số ốc 2 bắn' },
+      { key: 'lucVit2', label: 'Lực vít 2' },
+      { key: 'ghiChu', label: 'Ghi chú' }
+    ];
+
+    function renderAutoMatrix() {
       const selectedLine = document.getElementById('autoLineSelect').value;
       const selectedModel = document.getElementById('autoModelSelect').value;
-      const tbody = document.getElementById('autoTableBody');
+      const tbody = document.getElementById('autoMatrixBody');
 
       if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Vui lòng chọn Line và Model</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:16px;">Vui lòng chọn Line và Model</td></tr>';
         return;
       }
 
       const filteredData = autoData.filter(d => d.line === selectedLine && d.model === selectedModel);
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--muted); padding: 16px;">Chưa có dữ liệu</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:16px; color: var(--muted);">Chưa có dữ liệu máy nào. Hãy nhấn "+ Thêm máy mới".</td></tr>';
         return;
       }
 
-      tbody.innerHTML = filteredData.map(item => `
-        <tr>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'may', this.value)">${item.may || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'congDung', this.value)">${item.congDung || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'maOc1', this.value)">${item.maOc1 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'soOc1', this.value)">${item.soOc1 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'lucVit1', this.value)">${item.lucVit1 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'maOc2', this.value)">${item.maOc2 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'soOc2', this.value)">${item.soOc2 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'lucVit2', this.value)">${item.lucVit2 || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, 'ghiChu', this.value)">${item.ghiChu || ''}</textarea></td>
-          <td><button class="btn-danger action-btn" onclick="deleteAutoItem(${item.id})">Xóa</button></td>
-        </tr>
-      `).join('');
+      let html = '';
 
-      // Điều chỉnh lại chiều cao ban đầu cho toàn bộ ô
+      // Render từng hàng thông số
+      AUTO_FIELDS.forEach(field => {
+        html += `<tr>`;
+        html += `<td class="sticky-col">${field.label}</td>`;
+        filteredData.forEach(item => {
+          const inputClass = field.isHeader ? 'cell-input cell-input-header' : 'cell-input';
+          const placeholder = field.isHeader ? 'Tên máy...' : '';
+          html += `<td class="col-item">
+            <textarea class="${inputClass}" placeholder="${placeholder}" oninput="autoResizeTextarea(this)" onchange="updateAutoItem(${item.id}, '${field.key}', this.value)">${item[field.key] || ''}</textarea>
+          </td>`;
+        });
+        html += `</tr>`;
+      });
+
+      // Hàng nút Xóa cho từng cột
+      html += `<tr>`;
+      html += `<td class="sticky-col">Thao tác</td>`;
+      filteredData.forEach(item => {
+        html += `<td class="col-item">
+          <button class="btn-danger action-btn" onclick="deleteAutoItem(${item.id})">Xóa máy này</button>
+        </td>`;
+      });
+      html += `</tr>`;
+
+      tbody.innerHTML = html;
+
       setTimeout(() => {
-        document.querySelectorAll('.cell-input').forEach(el => autoResizeTextarea(el));
+        document.querySelectorAll('#autoMatrixTable .cell-input').forEach(el => autoResizeTextarea(el));
       }, 0);
     }
 
-    function addAutoRow() {
+    function addAutoCol() {
       const line = document.getElementById('autoLineSelect').value;
       const model = document.getElementById('autoModelSelect').value;
       if (!line || !model) { alert("Vui lòng chọn Line và Model!"); return; }
 
       autoData.push({
         id: Date.now(), line, model,
-        may: '', congDung: '', maOc1: '', soOc1: '', lucVit1: '',
+        may: 'Máy ' + (autoData.filter(d => d.line === line && d.model === model).length + 1),
+        congDung: '', maOc1: '', soOc1: '', lucVit1: '',
         maOc2: '', soOc2: '', lucVit2: '', ghiChu: ''
       });
       saveData();
-      renderAutoTable();
+      renderAutoMatrix();
     }
 
     function updateAutoItem(id, field, value) {
@@ -451,57 +465,81 @@
     }
 
     function deleteAutoItem(id) {
-      if (confirm("Xóa dòng này?")) {
+      if (confirm("Xóa toàn bộ dữ liệu của máy này?")) {
         autoData = autoData.filter(d => d.id !== id);
         saveData();
-        renderAutoTable();
+        renderAutoMatrix();
       }
     }
 
-    /* ===== TAB 2: HỌC ĐỒ GÁ ===== */
-    function renderJigTable() {
+    /* ===== TAB 2: HỌC ĐỒ GÁ (DẠNG MA TRẬN) ===== */
+    const JIG_FIELDS = [
+      { key: 'tram', label: 'Trạm', isHeader: true },
+      { key: 'tenDoGa', label: 'Tên đồ gá' },
+      { key: 'thongSo', label: 'Thông số' },
+      { key: 'ghiChu', label: 'Ghi chú' }
+    ];
+
+    function renderJigMatrix() {
       const selectedLine = document.getElementById('jigLineSelect').value;
       const selectedModel = document.getElementById('jigModelSelect').value;
-      const tbody = document.getElementById('jigTableBody');
+      const tbody = document.getElementById('jigMatrixBody');
 
       if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Vui lòng chọn Line và Model</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:16px;">Vui lòng chọn Line và Model</td></tr>';
         return;
       }
 
       const filteredData = jigData.filter(d => d.line === selectedLine && d.model === selectedModel);
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--muted); padding: 16px;">Chưa có dữ liệu</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:16px; color: var(--muted);">Chưa có dữ liệu trạm nào. Hãy nhấn "+ Thêm trạm mới".</td></tr>';
         return;
       }
 
-      tbody.innerHTML = filteredData.map(item => `
-        <tr>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, 'tram', this.value)">${item.tram || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, 'tenDoGa', this.value)">${item.tenDoGa || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, 'thongSo', this.value)">${item.thongSo || ''}</textarea></td>
-          <td><textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, 'ghiChu', this.value)">${item.ghiChu || ''}</textarea></td>
-          <td><button class="btn-danger action-btn" onclick="deleteJigItem(${item.id})">Xóa</button></td>
-        </tr>
-      `).join('');
+      let html = '';
+
+      JIG_FIELDS.forEach(field => {
+        html += `<tr>`;
+        html += `<td class="sticky-col">${field.label}</td>`;
+        filteredData.forEach(item => {
+          const inputClass = field.isHeader ? 'cell-input cell-input-header' : 'cell-input';
+          const placeholder = field.isHeader ? 'Tên trạm...' : '';
+          html += `<td class="col-item">
+            <textarea class="${inputClass}" placeholder="${placeholder}" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, '${field.key}', this.value)">${item[field.key] || ''}</textarea>
+          </td>`;
+        });
+        html += `</tr>`;
+      });
+
+      html += `<tr>`;
+      html += `<td class="sticky-col">Thao tác</td>`;
+      filteredData.forEach(item => {
+        html += `<td class="col-item">
+          <button class="btn-danger action-btn" onclick="deleteJigItem(${item.id})">Xóa trạm này</button>
+        </td>`;
+      });
+      html += `</tr>`;
+
+      tbody.innerHTML = html;
 
       setTimeout(() => {
-        document.querySelectorAll('.cell-input').forEach(el => autoResizeTextarea(el));
+        document.querySelectorAll('#jigMatrixTable .cell-input').forEach(el => autoResizeTextarea(el));
       }, 0);
     }
 
-    function addJigRow() {
+    function addJigCol() {
       const line = document.getElementById('jigLineSelect').value;
       const model = document.getElementById('jigModelSelect').value;
       if (!line || !model) { alert("Vui lòng chọn Line và Model!"); return; }
 
       jigData.push({
         id: Date.now(), line, model,
-        tram: '', tenDoGa: '', thongSo: '', ghiChu: ''
+        tram: 'Trạm ' + (jigData.filter(d => d.line === line && d.model === model).length + 1),
+        tenDoGa: '', thongSo: '', ghiChu: ''
       });
       saveData();
-      renderJigTable();
+      renderJigMatrix();
     }
 
     function updateJigItem(id, field, value) {
@@ -513,10 +551,10 @@
     }
 
     function deleteJigItem(id) {
-      if (confirm("Xóa dòng này?")) {
+      if (confirm("Xóa toàn bộ dữ liệu của trạm này?")) {
         jigData = jigData.filter(d => d.id !== id);
         saveData();
-        renderJigTable();
+        renderJigMatrix();
       }
     }
 
@@ -526,7 +564,7 @@
       linesContainer.innerHTML = lines.map((l, index) => `
         <div class="list-item-manage">
           <span><b>Line:</b> ${l}</span>
-          <button class="btn-danger action-btn" onclick="deleteLine(${index})">Xóa</button>
+          <button class="btn-danger action-btn" style="width:auto;" onclick="deleteLine(${index})">Xóa</button>
         </div>
       `).join('');
 
@@ -534,7 +572,7 @@
       modelsContainer.innerHTML = models.map((m, index) => `
         <div class="list-item-manage">
           <span><b>Model:</b> ${m}</span>
-          <button class="btn-danger action-btn" onclick="deleteModel(${index})">Xóa</button>
+          <button class="btn-danger action-btn" style="width:auto;" onclick="deleteModel(${index})">Xóa</button>
         </div>
       `).join('');
     }
@@ -619,7 +657,7 @@
 
     window.onload = function() {
       loadData();
-      renderAutoTable();
+      renderAutoMatrix();
     };
   </script>
 </body>
