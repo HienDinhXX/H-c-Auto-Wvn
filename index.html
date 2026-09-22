@@ -279,6 +279,25 @@
       border-radius: 8px;
       margin-left: 3px;
     }
+    
+    /* Phân biệt nhóm ốc 1 và ốc 2 trong Tab Học tự động */
+.auto-group-1 td {
+  background: #f0f8ff;
+}
+
+.auto-group-1 .sticky-col {
+  background: #e8f4ff !important;
+}
+
+.auto-group-2 td {
+  background: #fffbea;
+}
+
+.auto-group-2 .sticky-col {
+  background: #fff6d9 !important;
+}
+
+    
   </style>
 </head>
 <body>
@@ -554,7 +573,17 @@
 
       // Các hàng thông số
       AUTO_FIELDS.forEach(field => {
-        html += `<tr>`;
+        
+        let rowClass = '';
+
+        if (['maOc1', 'soOc1', 'lucVit1'].includes(field.key)) {
+        rowClass = 'auto-group-1';
+         } else if (['maOc2', 'soOc2', 'lucVit2'].includes(field.key)) {
+        rowClass = 'auto-group-2';
+         }
+        html += `<tr class="${rowClass}">`;
+        
+        
         html += `<td class="sticky-col">${field.label}</td>`;
         machinesList.forEach(mName => {
           const item = autoData.find(d => d.line === selectedLine && d.model === selectedModel && d.may === mName);
