@@ -354,13 +354,13 @@
     <!-- TAB 3: CÀI ĐẶT -->
     <div id="tab-settings" class="tab-content">
 
-      <!-- MỤC THỐNG KÊ MODEL THEO LINE (KHÔNG ĐẾM MÁY NỮA) -->
+      <!-- MỤC THỐNG KÊ MODEL THEO LINE -->
       <div class="card">
         <h2>📋 Thống kê Dữ liệu đã ghi theo Line</h2>
         <div id="lineSummaryContainer"></div>
       </div>
 
-      <!-- MỤC MỚI: CÀI ĐẶT TÊN MÁY CỐ ĐỊNH THEO LINE -->
+      <!-- CÀI ĐẶT TÊN MÁY CỐ ĐỊNH THEO LINE -->
       <div class="card">
         <h2>🤖 Cài đặt Tên máy cố định theo Line</h2>
         <label for="settingLineSelect">Chọn Line để thiết lập danh sách máy</label>
@@ -418,19 +418,19 @@
       "Yukon 13 2in1"
     ];
 
-    // Mặc định tạo danh sách máy mẫu cho các line
+    // Mặc định các Line KHÔNG CÓ MÁY NÀO
     const DEFAULT_LINE_MACHINES = {
-      "A3A": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"],
-      "A3B": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"],
-      "A4A": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"],
-      "A4B": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"],
-      "A5A": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"],
-      "A5B": ["Máy 1", "Máy 2", "Máy 3", "Máy 4"]
+      "A3A": [],
+      "A3B": [],
+      "A4A": [],
+      "A4B": [],
+      "A5A": [],
+      "A5B": []
     };
 
     let lines = [];
     let models = [];
-    let lineMachines = {}; // Cấu trúc: { "A3A": ["Máy 1", "Máy 2"], "A3B": [...] }
+    let lineMachines = {};
     let autoData = [];
     let jigData = [];
 
@@ -441,9 +441,8 @@
       autoData = JSON.parse(localStorage.getItem("app_auto_data")) || [];
       jigData = JSON.parse(localStorage.getItem("app_jig_data")) || [];
 
-      // Đảm bảo mọi Line đều có mảng danh sách máy trong lineMachines
       lines.forEach(l => {
-        if (!lineMachines[l]) lineMachines[l] = ["Máy 1", "Máy 2", "Máy 3"];
+        if (!lineMachines[l]) lineMachines[l] = [];
       });
 
       updateSelectOptions();
@@ -458,16 +457,19 @@
     }
 
     function resetToDefaults() {
-      if (confirm("Thao tác này sẽ đặt lại cấu hình mặc định ban đầu. Bạn có chắc không?")) {
+      if (confirm("Thao tác này sẽ tải lại danh sách mặc định: Các line không có máy nào và chưa có dữ liệu Model nào được ghi. Bạn có chắc không?")) {
         lines = DEFAULT_LINES;
         models = DEFAULT_MODELS;
-        lineMachines = DEFAULT_LINE_MACHINES;
+        lineMachines = {
+          "A3A": [], "A3B": [], "A4A": [], "A4B": [], "A5A": [], "A5B": []
+        };
         autoData = [];
         jigData = [];
         saveData();
         updateSelectOptions();
         renderSettings();
-        alert("Đã khôi phục cài đặt mặc định thành công!");
+        renderAutoMatrix();
+        alert("Đã tải lại dữ liệu mặc định thành công!");
       }
     }
 
@@ -526,7 +528,10 @@
       const machinesList = lineMachines[selectedLine] || [];
 
       if (machinesList.length === 0) {
-        tbody.innerHTML = '<tr><td style="padding:10px; color: var(--muted);">Line này chưa được cài đặt danh sách máy. Vui lòng vào Tab Cài đặt để thêm máy.</td></tr>';
+        tbody.innerHTML = `<tr><td style="padding:15px; text-align:center; color: var(--muted);">
+          Line <b>${selectedLine}</b> hiện chưa được thiết lập máy nào.<br>
+          Vui lòng vào <b>Tab Cài đặt</b> ➔ Mục <b>"Cài đặt Tên máy cố định theo Line"</b> để thêm máy.
+        </td></tr>`;
         return;
       }
 
@@ -545,7 +550,6 @@
         html += `<tr>`;
         html += `<td class="sticky-col">${field.label}</td>`;
         machinesList.forEach(mName => {
-          // Tìm dữ liệu đã lưu của máy này
           const item = autoData.find(d => d.line === selectedLine && d.model === selectedModel && d.may === mName);
           const val = item ? (item[field.key] || '') : '';
           
@@ -572,7 +576,6 @@
       item[field] = value;
       saveData();
     }
-
 
     /* ===== TAB 2: HỌC ĐỒ GÁ ===== */
     const JIG_FIELDS = [
@@ -681,10 +684,8 @@
 
     /* ===== TAB 3: CÀI ĐẶT ===== */
     function renderSettings() {
-      // 1. Render Cài đặt Máy cố định theo Line
       renderLineMachinesSetting();
 
-      // 2. Render Danh sách Line
       const linesContainer = document.getElementById('linesListContainer');
       linesContainer.innerHTML = lines.map((l, index) => `
         <div class="list-item-manage">
@@ -696,7 +697,6 @@
         </div>
       `).join('');
 
-      // 3. Render Danh sách Model
       const modelsContainer = document.getElementById('modelsListContainer');
       modelsContainer.innerHTML = models.map((m, index) => `
         <div class="list-item-manage">
@@ -708,7 +708,6 @@
         </div>
       `).join('');
 
-      // 4. Render Thống kê Line -> Models đã ghi dữ liệu (Không đếm máy)
       renderSummary();
     }
 
@@ -721,7 +720,7 @@
       const mList = lineMachines[line] || [];
 
       if (mList.length === 0) {
-        container.innerHTML = '<div style="color:var(--muted); font-style:italic;">Chưa có máy nào trong Line này.</div>';
+        container.innerHTML = '<div style="color:var(--muted); font-style:italic;">Chưa có máy nào được thêm vào Line này.</div>';
         return;
       }
 
@@ -768,7 +767,6 @@
 
         lineMachines[line][index] = trimmed;
 
-        // Cập nhật lại tên máy trong dữ liệu Học Tự Động đã ghi
         autoData.forEach(d => {
           if (d.line === line && d.may === oldName) {
             d.may = trimmed;
@@ -789,16 +787,13 @@
       }
     }
 
-
-    /* --- HIỂN THỊ LIỆT KÊ MODEL ĐÃ GHI THEO LINE (KHÔNG TÍNH HÀNG MÁY) --- */
+    /* --- HIỂN THỊ LIỆT KÊ MODEL ĐÃ GHI THEO LINE --- */
     function renderSummary() {
       const summaryContainer = document.getElementById('lineSummaryContainer');
       let html = '';
 
       lines.forEach(line => {
-        // Lấy danh sách các Model có dữ liệu ở Học tự động
         const autoModels = autoData.filter(d => d.line === line && Object.keys(d).some(k => !['id','line','model','may'].includes(k) && d[k] !== ''));
-        // Lấy danh sách các Model có dữ liệu ở Học đồ gá
         const jigModels = jigData.filter(d => d.line === line);
 
         const modelStats = {};
@@ -836,7 +831,6 @@
       summaryContainer.innerHTML = html;
     }
 
-
     /* --- CÁC THAO TÁC SỬA / XÓA LINE & MODEL --- */
     function addNewLine() {
       const val = document.getElementById('newLineInput').value.trim();
@@ -844,7 +838,7 @@
       if (lines.includes(val)) { alert("Line này đã tồn tại!"); return; }
 
       lines.push(val);
-      lineMachines[val] = ["Máy 1", "Máy 2", "Máy 3"]; // Mặc định 3 máy cho line mới
+      lineMachines[val] = [];
       document.getElementById('newLineInput').value = '';
       saveData();
       updateSelectOptions();
@@ -862,7 +856,6 @@
         lineMachines[trimmed] = lineMachines[oldName] || [];
         delete lineMachines[oldName];
 
-        // Cập nhật lại toàn bộ dữ liệu đã ghi thuộc line cũ
         autoData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
         jigData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
 
@@ -904,7 +897,6 @@
 
         models[index] = trimmed;
 
-        // Cập nhật lại toàn bộ dữ liệu đã ghi thuộc model cũ
         autoData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
         jigData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
 
