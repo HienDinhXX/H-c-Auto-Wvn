@@ -17,6 +17,7 @@
       --primary: #007aff;
       --danger: #ff3b30;
       --success: #34c759;
+      --warning: #ff9500;
       --shadow: 0 4px 16px rgba(0,0,0,0.06);
       --radius: 12px;
       --pad: 12px;
@@ -119,6 +120,7 @@
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
+    .btn-warning { background: var(--warning); color: #fff; }
 
     .filter-group {
       display: grid;
@@ -236,6 +238,39 @@
       display: flex;
       gap: 6px;
     }
+
+    /* Thống kê Model theo Line */
+    .stat-line-block {
+      border: 1px solid #e5e5ea;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+    .stat-line-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .stat-model-tag {
+      display: inline-block;
+      background: #e5f1ff;
+      color: #0051a8;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin: 2px 4px 2px 0;
+      font-weight: 500;
+    }
+    .badge-count {
+      font-size: 10px;
+      background: var(--primary);
+      color: #fff;
+      padding: 1px 5px;
+      border-radius: 8px;
+      margin-left: 3px;
+    }
   </style>
 </head>
 <body>
@@ -312,11 +347,18 @@
 
     <!-- TAB 3: CÀI ĐẶT -->
     <div id="tab-settings" class="tab-content">
+
+      <!-- MỤC MỚI: LIỆT KÊ LINE & MODEL ĐÃ CÓ DỮ LIỆU -->
+      <div class="card">
+        <h2>📋 Thống kê Dữ liệu đã ghi theo Line</h2>
+        <div id="lineSummaryContainer"></div>
+      </div>
+
       <div class="card">
         <h2>📍 Quản lý Danh sách Line</h2>
         <div id="linesListContainer"></div>
         <div class="flex-row" style="margin-top: 8px;">
-          <input type="text" id="newLineInput" placeholder="Tên Line mới (ví dụ: A3A)..." style="margin-bottom:0;">
+          <input type="text" id="newLineInput" placeholder="Tên Line mới (ví dụ: A6A)..." style="margin-bottom:0;">
           <button class="btn-primary" onclick="addNewLine()" style="width: auto; white-space: nowrap;">Thêm Line</button>
         </div>
       </div>
@@ -334,15 +376,27 @@
         <h2>🗂️ Sao lưu & Phục hồi dữ liệu</h2>
         <button class="btn-primary" onclick="exportData()" style="margin-bottom:8px;">📤 Xuất dữ liệu (.json)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        <button class="btn-success" onclick="document.getElementById('importFile').click()">📥 Phục hồi dữ liệu</button>
+        <button class="btn-success" onclick="document.getElementById('importFile').click()" style="margin-bottom:8px;">📥 Phục hồi dữ liệu</button>
+        <button class="btn-danger" onclick="resetToDefaults()">🔄 Tải lại dữ liệu mặc định</button>
       </div>
     </div>
 
   </div>
 
   <script>
-    const DEFAULT_LINES = ["A1A", "A1B", "A2A", "A2B"];
-    const DEFAULT_MODELS = ["Slate 16", "Congo 16", "Taroko 16"];
+    const DEFAULT_LINES = ["A1A", "A1B", "A2A", "A2B", "A3A", "A3B", "A4A", "A4B", "A5A", "A5B"];
+    const DEFAULT_MODELS = [
+      "Slate 16",
+      "Congo 16 nhôm",
+      "Congo 16 nhựa",
+      "Taroko 16",
+      "Taroko 13cs",
+      "Taroko 13 2in1",
+      "Jade 14",
+      "Jade 16",
+      "Yukon 13cs",
+      "Yukon 13 2in1"
+    ];
 
     let lines = [];
     let models = [];
@@ -363,6 +417,17 @@
       localStorage.setItem("app_models", JSON.stringify(models));
       localStorage.setItem("app_auto_data", JSON.stringify(autoData));
       localStorage.setItem("app_jig_data", JSON.stringify(jigData));
+    }
+
+    function resetToDefaults() {
+      if (confirm("Thao tác này sẽ cập nhật lại danh sách Line & Model mặc định mới. Bạn có chắc không?")) {
+        lines = DEFAULT_LINES;
+        models = DEFAULT_MODELS;
+        saveData();
+        updateSelectOptions();
+        renderSettings();
+        alert("Đã khôi phục cài đặt mặc định thành công!");
+      }
     }
 
     function updateSelectOptions() {
@@ -388,9 +453,9 @@
     }
 
     function autoResizeTextarea(el) {
-      el.style.height = '26px'; // Trở về 1 dòng mặc định
+      el.style.height = '26px';
       if (el.scrollHeight > 26) {
-        el.style.height = (el.scrollHeight) + 'px'; // Mở rộng nếu tràn dòng
+        el.style.height = (el.scrollHeight) + 'px';
       }
     }
 
@@ -439,7 +504,6 @@
         html += `</tr>`;
       });
 
-      // Thao tác: Chèn giữa & Xóa
       html += `<tr>`;
       html += `<td class="sticky-col">Thao tác</td>`;
       filteredData.forEach(item => {
@@ -614,23 +678,80 @@
 
     /* ===== TAB 3: CÀI ĐẶT ===== */
     function renderSettings() {
+      // 1. Render Danh sách Line
       const linesContainer = document.getElementById('linesListContainer');
       linesContainer.innerHTML = lines.map((l, index) => `
         <div class="list-item-manage">
           <span><b>Line:</b> ${l}</span>
-          <button class="btn-danger action-btn" style="width:auto;" onclick="deleteLine(${index})">Xóa</button>
+          <div class="flex-row">
+            <button class="btn-warning action-btn" style="width:auto;" onclick="editLine(${index})">✏️ Sửa</button>
+            <button class="btn-danger action-btn" style="width:auto;" onclick="deleteLine(${index})">🗑️ Xóa</button>
+          </div>
         </div>
       `).join('');
 
+      // 2. Render Danh sách Model
       const modelsContainer = document.getElementById('modelsListContainer');
       modelsContainer.innerHTML = models.map((m, index) => `
         <div class="list-item-manage">
           <span><b>Model:</b> ${m}</span>
-          <button class="btn-danger action-btn" style="width:auto;" onclick="deleteModel(${index})">Xóa</button>
+          <div class="flex-row">
+            <button class="btn-warning action-btn" style="width:auto;" onclick="editModel(${index})">✏️ Sửa</button>
+            <button class="btn-danger action-btn" style="width:auto;" onclick="deleteModel(${index})">🗑️ Xóa</button>
+          </div>
         </div>
       `).join('');
+
+      // 3. Render Thống kê Line -> Models đã ghi dữ liệu
+      renderSummary();
     }
 
+    /* --- HIỂN THỊ LIỆT KÊ MODEL ĐÃ GHI THEO LINE --- */
+    function renderSummary() {
+      const summaryContainer = document.getElementById('lineSummaryContainer');
+      let html = '';
+
+      lines.forEach(line => {
+        // Gom nhóm Model đã ghi ở Tab Auto & Jig
+        const autoModels = autoData.filter(d => d.line === line);
+        const jigModels = jigData.filter(d => d.line === line);
+
+        const modelStats = {};
+
+        autoModels.forEach(item => {
+          if (!modelStats[item.model]) modelStats[item.model] = { autoCount: 0, jigCount: 0 };
+          modelStats[item.model].autoCount++;
+        });
+
+        jigModels.forEach(item => {
+          if (!modelStats[item.model]) modelStats[item.model] = { autoCount: 0, jigCount: 0 };
+          modelStats[item.model].jigCount++;
+        });
+
+        const recordedModels = Object.keys(modelStats);
+
+        html += `<div class="stat-line-block">`;
+        html += `<div class="stat-line-title">📍 Line: ${line}</div>`;
+
+        if (recordedModels.length === 0) {
+          html += `<div style="color: var(--muted); font-style: italic;">Chưa có dữ liệu thông số nào được ghi.</div>`;
+        } else {
+          recordedModels.forEach(modelName => {
+            const stat = modelStats[modelName];
+            let details = [];
+            if (stat.autoCount > 0) details.push(`${stat.autoCount} máy`);
+            if (stat.jigCount > 0) details.push(`${stat.jigCount} trạm`);
+
+            html += `<span class="stat-model-tag">📱 ${modelName} <span class="badge-count">${details.join(' + ')}</span></span>`;
+          });
+        }
+        html += `</div>`;
+      });
+
+      summaryContainer.innerHTML = html;
+    }
+
+    /* --- CÁC THAO TÁC SỬA / XÓA LINE & MODEL --- */
     function addNewLine() {
       const val = document.getElementById('newLineInput').value.trim();
       if (!val) return;
@@ -641,6 +762,25 @@
       saveData();
       updateSelectOptions();
       renderSettings();
+    }
+
+    function editLine(index) {
+      const oldName = lines[index];
+      const newName = prompt(`Nhập tên mới cho Line "${oldName}":`, oldName);
+      if (newName && newName.trim() !== "" && newName !== oldName) {
+        const trimmed = newName.trim();
+        if (lines.includes(trimmed)) { alert("Tên Line này đã trùng với Line khác!"); return; }
+
+        lines[index] = trimmed;
+
+        // Cập nhật lại toàn bộ dữ liệu đã ghi thuộc line cũ
+        autoData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
+        jigData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
+
+        saveData();
+        updateSelectOptions();
+        renderSettings();
+      }
     }
 
     function deleteLine(index) {
@@ -662,6 +802,25 @@
       saveData();
       updateSelectOptions();
       renderSettings();
+    }
+
+    function editModel(index) {
+      const oldName = models[index];
+      const newName = prompt(`Nhập tên mới cho Model "${oldName}":`, oldName);
+      if (newName && newName.trim() !== "" && newName !== oldName) {
+        const trimmed = newName.trim();
+        if (models.includes(trimmed)) { alert("Tên Model này đã trùng với Model khác!"); return; }
+
+        models[index] = trimmed;
+
+        // Cập nhật lại toàn bộ dữ liệu đã ghi thuộc model cũ
+        autoData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
+        jigData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
+
+        saveData();
+        updateSelectOptions();
+        renderSettings();
+      }
     }
 
     function deleteModel(index) {
