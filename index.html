@@ -19,8 +19,8 @@
       --success: #34c759;
       --shadow: 0 4px 16px rgba(0,0,0,0.06);
       --radius: 12px;
-      --pad: 16px;
-      --gap: 12px;
+      --pad: 12px;
+      --gap: 10px;
       --container-max: 100%;
     }
 
@@ -34,14 +34,15 @@
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding-top: 60px;
-      padding-bottom: 40px;
+      padding-top: 55px;
+      padding-bottom: 30px;
+      font-size: 13px;
     }
 
     /* Tab Bar */
     .tab-bar {
       position: fixed; top: 0; left: 0; right: 0;
-      height: 60px;
+      height: 52px;
       background: #e5e5ea;
       border-bottom: 1px solid #d1d1d6;
       display: flex;
@@ -50,12 +51,12 @@
       padding-top: env(safe-area-inset-top, 0px);
     }
 
-    .tab-divider { width: 1px; height: 28px; background-color: #c7c7cc; }
+    .tab-divider { width: 1px; height: 24px; background-color: #c7c7cc; }
 
     .tab-item {
       flex: 1; height: 100%; text-align: center; color: var(--muted);
       font-size: 11px; cursor: pointer; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 2px;
+      align-items: center; justify-content: center; gap: 1px;
       background: #e5e5ea; opacity: 0.7;
       transition: background 0.2s ease, opacity 0.2s ease, color 0.2s ease;
     }
@@ -64,12 +65,12 @@
       background: #ffffff; color: var(--primary);
       font-weight: 600; opacity: 1;
     }
-    .tab-item .icon { font-size: 18px; }
+    .tab-item .icon { font-size: 16px; }
 
     .container {
       max-width: var(--container-max);
       margin: 0 auto;
-      padding: 16px;
+      padding: 10px;
     }
 
     .card {
@@ -80,20 +81,20 @@
       margin-bottom: var(--gap);
     }
 
-    h2 { font-size: 18px; margin: 0 0 12px; }
+    h2 { font-size: 15px; margin: 0 0 8px; }
 
-    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; font-weight: 600; }
+    label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 3px; font-weight: 600; }
 
     input, select, button {
       width: 100%;
-      min-height: 42px;
-      font-size: 14px;
-      border-radius: 8px;
+      min-height: 34px;
+      font-size: 12px;
+      border-radius: 6px;
     }
 
     input, select {
-      padding: 8px 12px;
-      margin-bottom: 12px;
+      padding: 4px 8px;
+      margin-bottom: 8px;
       border: 1px solid #e3e3e8;
       background: #fafafa;
       outline: none;
@@ -102,13 +103,13 @@
     input:focus, select:focus {
       border-color: var(--primary);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(0,122,255,0.12);
+      box-shadow: 0 0 0 2px rgba(0,122,255,0.12);
     }
 
     button {
-      padding: 8px 12px;
+      padding: 4px 8px;
       border: none;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: transform .05s ease, background 0.2s;
@@ -122,8 +123,8 @@
     .filter-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
     /* Bảng Ma Trận Ngang */
@@ -132,54 +133,57 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       border: 1px solid #e5e5ea;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
     }
 
     table {
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 12px;
       background: #fff;
       min-width: 100%;
     }
 
     th, td {
-      padding: 8px;
+      padding: 3px 4px;
       text-align: left;
       border-bottom: 1px solid #efeff4;
       border-right: 1px solid #efeff4;
       vertical-align: middle;
     }
 
-    /* Cột Tiêu đề nằm cố định bên trái */
+    /* Cột Tiêu đề bên trái: Chiều rộng bằng "Mã ốc hộp 2" (~120px) */
     .sticky-col {
       position: sticky;
       left: 0;
       background: #f8f8fa !important;
       font-weight: 600;
       color: var(--text);
-      width: 140px;
-      min-width: 140px;
-      max-width: 140px;
+      width: 120px;
+      min-width: 120px;
+      max-width: 120px;
       z-index: 2;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      box-shadow: 2px 0 4px rgba(0,0,0,0.04);
+      font-size: 12px;
+      padding-left: 6px;
     }
 
     .col-item {
-      min-width: 200px;
-      width: 200px;
+      min-width: 170px;
+      width: 170px;
     }
 
-    /* Ô NHẬP LIỆU: Tự co giãn & tự xuống dòng */
+    /* Ô NHẬP LIỆU: Mặc định 1 dòng (28px), tự nở ra dòng 2 khi gõ dài */
     .cell-input {
       width: 100%;
-      min-height: 42px;
-      padding: 8px;
+      min-height: 28px;
+      height: 28px;
+      padding: 4px 6px;
       font-family: inherit;
-      font-size: 14px;
-      line-height: 1.4;
+      font-size: 12px;
+      line-height: 1.3;
       border: 1px solid #e3e3e8;
-      border-radius: 6px;
+      border-radius: 4px;
       background: #fafafa;
       outline: none;
       resize: vertical;
@@ -206,21 +210,28 @@
     .action-btn {
       width: 100%;
       min-height: unset;
-      padding: 6px 12px;
-      font-size: 12px;
+      padding: 3px 6px;
+      font-size: 11px;
+    }
+
+    .btn-insert {
+      background: #e5f1ff;
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      margin-bottom: 2px;
     }
 
     .list-item-manage {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
+      padding: 6px 0;
       border-bottom: 1px solid #efeff4;
     }
 
     .flex-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
   </style>
 </head>
@@ -261,7 +272,7 @@
           </div>
         </div>
 
-        <button class="btn-primary" onclick="addAutoCol()" style="margin-bottom: 12px;">+ Thêm máy mới (Thêm Cột)</button>
+        <button class="btn-primary" onclick="addAutoCol()" style="margin-bottom: 8px; height: 32px;">+ Thêm máy cuối</button>
 
         <div class="table-wrapper">
           <table id="autoMatrixTable">
@@ -286,7 +297,7 @@
           </div>
         </div>
 
-        <button class="btn-primary" onclick="addJigCol()" style="margin-bottom: 12px;">+ Thêm trạm mới (Thêm Cột)</button>
+        <button class="btn-primary" onclick="addJigCol()" style="margin-bottom: 8px; height: 32px;">+ Thêm trạm cuối</button>
 
         <div class="table-wrapper">
           <table id="jigMatrixTable">
@@ -301,7 +312,7 @@
       <div class="card">
         <h2>📍 Quản lý Danh sách Line</h2>
         <div id="linesListContainer"></div>
-        <div class="flex-row" style="margin-top: 10px;">
+        <div class="flex-row" style="margin-top: 8px;">
           <input type="text" id="newLineInput" placeholder="Tên Line mới (ví dụ: A3A)..." style="margin-bottom:0;">
           <button class="btn-primary" onclick="addNewLine()" style="width: auto; white-space: nowrap;">Thêm Line</button>
         </div>
@@ -310,7 +321,7 @@
       <div class="card">
         <h2>📱 Quản lý Danh sách Model</h2>
         <div id="modelsListContainer"></div>
-        <div class="flex-row" style="margin-top: 10px;">
+        <div class="flex-row" style="margin-top: 8px;">
           <input type="text" id="newModelInput" placeholder="Tên Model mới..." style="margin-bottom:0;">
           <button class="btn-primary" onclick="addNewModel()" style="width: auto; white-space: nowrap;">Thêm Model</button>
         </div>
@@ -318,7 +329,7 @@
 
       <div class="card">
         <h2>🗂️ Sao lưu & Phục hồi dữ liệu</h2>
-        <button class="btn-primary" onclick="exportData()" style="margin-bottom:10px;">📤 Xuất dữ liệu (.json)</button>
+        <button class="btn-primary" onclick="exportData()" style="margin-bottom:8px;">📤 Xuất dữ liệu (.json)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
         <button class="btn-success" onclick="document.getElementById('importFile').click()">📥 Phục hồi dữ liệu</button>
       </div>
@@ -374,11 +385,13 @@
     }
 
     function autoResizeTextarea(el) {
-      el.style.height = 'auto';
-      el.style.height = (el.scrollHeight) + 'px';
+      el.style.height = '28px'; // Trở về 1 dòng mặc định
+      if (el.scrollHeight > 28) {
+        el.style.height = (el.scrollHeight) + 'px'; // Mở rộng nếu tràn dòng
+      }
     }
 
-    /* ===== TAB 1: HỌC TỰ ĐỘNG (DẠNG MA TRẬN) ===== */
+    /* ===== TAB 1: HỌC TỰ ĐỘNG ===== */
     const AUTO_FIELDS = [
       { key: 'may', label: 'Máy', isHeader: true },
       { key: 'congDung', label: 'Công dụng' },
@@ -397,20 +410,19 @@
       const tbody = document.getElementById('autoMatrixBody');
 
       if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td style="padding:16px;">Vui lòng chọn Line và Model</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:10px;">Vui lòng chọn Line và Model</td></tr>';
         return;
       }
 
       const filteredData = autoData.filter(d => d.line === selectedLine && d.model === selectedModel);
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td style="padding:16px; color: var(--muted);">Chưa có dữ liệu máy nào. Hãy nhấn "+ Thêm máy mới".</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:10px; color: var(--muted);">Chưa có máy nào. Nhấn nút thêm phía trên.</td></tr>';
         return;
       }
 
       let html = '';
 
-      // Render từng hàng thông số
       AUTO_FIELDS.forEach(field => {
         html += `<tr>`;
         html += `<td class="sticky-col">${field.label}</td>`;
@@ -424,12 +436,13 @@
         html += `</tr>`;
       });
 
-      // Hàng nút Xóa cho từng cột
+      // Thao tác: Chèn giữa & Xóa
       html += `<tr>`;
       html += `<td class="sticky-col">Thao tác</td>`;
       filteredData.forEach(item => {
         html += `<td class="col-item">
-          <button class="btn-danger action-btn" onclick="deleteAutoItem(${item.id})">Xóa máy này</button>
+          <button class="action-btn btn-insert" onclick="insertAutoColBefore(${item.id})">➕ Chèn máy trước</button>
+          <button class="btn-danger action-btn" onclick="deleteAutoItem(${item.id})">🗑️ Xóa máy</button>
         </td>`;
       });
       html += `</tr>`;
@@ -456,6 +469,25 @@
       renderAutoMatrix();
     }
 
+    function insertAutoColBefore(targetId) {
+      const targetIndex = autoData.findIndex(d => d.id === targetId);
+      if (targetIndex === -1) return;
+
+      const targetItem = autoData[targetIndex];
+      const newItem = {
+        id: Date.now(),
+        line: targetItem.line,
+        model: targetItem.model,
+        may: 'Máy mới',
+        congDung: '', maOc1: '', soOc1: '', lucVit1: '',
+        maOc2: '', soOc2: '', lucVit2: '', ghiChu: ''
+      };
+
+      autoData.splice(targetIndex, 0, newItem);
+      saveData();
+      renderAutoMatrix();
+    }
+
     function updateAutoItem(id, field, value) {
       const item = autoData.find(d => d.id === id);
       if (item) {
@@ -465,14 +497,14 @@
     }
 
     function deleteAutoItem(id) {
-      if (confirm("Xóa toàn bộ dữ liệu của máy này?")) {
+      if (confirm("Xóa máy này?")) {
         autoData = autoData.filter(d => d.id !== id);
         saveData();
         renderAutoMatrix();
       }
     }
 
-    /* ===== TAB 2: HỌC ĐỒ GÁ (DẠNG MA TRẬN) ===== */
+    /* ===== TAB 2: HỌC ĐỒ GÁ ===== */
     const JIG_FIELDS = [
       { key: 'tram', label: 'Trạm', isHeader: true },
       { key: 'tenDoGa', label: 'Tên đồ gá' },
@@ -486,14 +518,14 @@
       const tbody = document.getElementById('jigMatrixBody');
 
       if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td style="padding:16px;">Vui lòng chọn Line và Model</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:10px;">Vui lòng chọn Line và Model</td></tr>';
         return;
       }
 
       const filteredData = jigData.filter(d => d.line === selectedLine && d.model === selectedModel);
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td style="padding:16px; color: var(--muted);">Chưa có dữ liệu trạm nào. Hãy nhấn "+ Thêm trạm mới".</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:10px; color: var(--muted);">Chưa có trạm nào. Nhấn nút thêm phía trên.</td></tr>';
         return;
       }
 
@@ -516,7 +548,8 @@
       html += `<td class="sticky-col">Thao tác</td>`;
       filteredData.forEach(item => {
         html += `<td class="col-item">
-          <button class="btn-danger action-btn" onclick="deleteJigItem(${item.id})">Xóa trạm này</button>
+          <button class="action-btn btn-insert" onclick="insertJigColBefore(${item.id})">➕ Chèn trạm trước</button>
+          <button class="btn-danger action-btn" onclick="deleteJigItem(${item.id})">🗑️ Xóa trạm</button>
         </td>`;
       });
       html += `</tr>`;
@@ -542,6 +575,24 @@
       renderJigMatrix();
     }
 
+    function insertJigColBefore(targetId) {
+      const targetIndex = jigData.findIndex(d => d.id === targetId);
+      if (targetIndex === -1) return;
+
+      const targetItem = jigData[targetIndex];
+      const newItem = {
+        id: Date.now(),
+        line: targetItem.line,
+        model: targetItem.model,
+        tram: 'Trạm mới',
+        tenDoGa: '', thongSo: '', ghiChu: ''
+      };
+
+      jigData.splice(targetIndex, 0, newItem);
+      saveData();
+      renderJigMatrix();
+    }
+
     function updateJigItem(id, field, value) {
       const item = jigData.find(d => d.id === id);
       if (item) {
@@ -551,7 +602,7 @@
     }
 
     function deleteJigItem(id) {
-      if (confirm("Xóa toàn bộ dữ liệu của trạm này?")) {
+      if (confirm("Xóa trạm này?")) {
         jigData = jigData.filter(d => d.id !== id);
         saveData();
         renderJigMatrix();
