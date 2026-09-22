@@ -404,22 +404,15 @@
   </div>
 
   <script>
-    const DEFAULT_LINES = ["A3A", "A3B", "A4A", "A4B", "A5A", "A5B"];
-    const DEFAULT_MODELS = [
-      "Slate 16",
-      "Congo 16 nhôm",
-      "Congo 16 nhựa",
-      "Taroko 16",
-      "Taroko 13cs",
-      "Taroko 13 2in1",
-      "Jade 14",
-      "Jade 16",
-      "Yukon 13cs",
-      "Yukon 13 2in1"
-    ];
+    // Danh sách Line mặc định (bao gồm cả A1A)
+    const DEFAULT_LINES = ["A1A", "A3A", "A3B", "A4A", "A4B", "A5A", "A5B"];
+    
+    // Mặc định danh sách Model trống
+    const DEFAULT_MODELS = [];
 
-    // Mặc định các Line KHÔNG CÓ MÁY NÀO
+    // Mặc định tất cả các Line KHÔNG CÓ MÁY NÀO
     const DEFAULT_LINE_MACHINES = {
+      "A1A": [],
       "A3A": [],
       "A3B": [],
       "A4A": [],
@@ -457,11 +450,11 @@
     }
 
     function resetToDefaults() {
-      if (confirm("Thao tác này sẽ tải lại danh sách mặc định: Các line không có máy nào và chưa có dữ liệu Model nào được ghi. Bạn có chắc không?")) {
+      if (confirm("Thao tác này sẽ đặt lại ứng dụng: Tất cả các Line sẽ KHÔNG CÓ máy nào và CHƯA CÓ dữ liệu Model nào. Bạn có chắc không?")) {
         lines = DEFAULT_LINES;
         models = DEFAULT_MODELS;
         lineMachines = {
-          "A3A": [], "A3B": [], "A4A": [], "A4B": [], "A5A": [], "A5B": []
+          "A1A": [], "A3A": [], "A3B": [], "A4A": [], "A4B": [], "A5A": [], "A5B": []
         };
         autoData = [];
         jigData = [];
@@ -469,13 +462,19 @@
         updateSelectOptions();
         renderSettings();
         renderAutoMatrix();
-        alert("Đã tải lại dữ liệu mặc định thành công!");
+        renderJigMatrix();
+        alert("Đã xóa toàn bộ dữ liệu và đặt lại trạng thái mặc định!");
       }
     }
 
     function updateSelectOptions() {
-      const lineOptions = lines.map(l => `<option value="${l}">${l}</option>`).join('');
-      const modelOptions = models.map(m => `<option value="${m}">${m}</option>`).join('');
+      const lineOptions = lines.length 
+        ? lines.map(l => `<option value="${l}">${l}</option>`).join('') 
+        : '<option value="">-- Chưa có Line --</option>';
+
+      const modelOptions = models.length 
+        ? models.map(m => `<option value="${m}">${m}</option>`).join('') 
+        : '<option value="">-- Chưa có Model --</option>';
 
       document.getElementById('autoLineSelect').innerHTML = lineOptions;
       document.getElementById('autoModelSelect').innerHTML = modelOptions;
@@ -520,8 +519,16 @@
       const selectedModel = document.getElementById('autoModelSelect').value;
       const tbody = document.getElementById('autoMatrixBody');
 
-      if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td style="padding:10px;">Vui lòng chọn Line và Model</td></tr>';
+      if (!selectedLine) {
+        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Chưa chọn Line nào.</td></tr>';
+        return;
+      }
+
+      if (!selectedModel) {
+        tbody.innerHTML = `<tr><td style="padding:15px; text-align:center; color: var(--muted);">
+          Chưa có Model nào.<br>
+          Vui lòng vào <b>Tab Cài đặt</b> ➔ Mục <b>"Quản lý Danh sách Model"</b> để thêm Model mới.
+        </td></tr>`;
         return;
       }
 
@@ -529,7 +536,7 @@
 
       if (machinesList.length === 0) {
         tbody.innerHTML = `<tr><td style="padding:15px; text-align:center; color: var(--muted);">
-          Line <b>${selectedLine}</b> hiện chưa được thiết lập máy nào.<br>
+          Line <b>${selectedLine}</b> hiện chưa có máy nào.<br>
           Vui lòng vào <b>Tab Cài đặt</b> ➔ Mục <b>"Cài đặt Tên máy cố định theo Line"</b> để thêm máy.
         </td></tr>`;
         return;
@@ -591,14 +598,14 @@
       const tbody = document.getElementById('jigMatrixBody');
 
       if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td style="padding:10px;">Vui lòng chọn Line và Model</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Vui lòng chọn Line và Model (hoặc thêm Model trong Cài đặt).</td></tr>';
         return;
       }
 
       const filteredData = jigData.filter(d => d.line === selectedLine && d.model === selectedModel);
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td style="padding:10px; color: var(--muted);">Chưa có trạm nào. Nhấn nút thêm phía trên.</td></tr>';
+        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Chưa có trạm nào. Nhấn nút "+ Thêm trạm cuối" phía trên.</td></tr>';
         return;
       }
 
@@ -637,7 +644,7 @@
     function addJigCol() {
       const line = document.getElementById('jigLineSelect').value;
       const model = document.getElementById('jigModelSelect').value;
-      if (!line || !model) { alert("Vui lòng chọn Line và Model!"); return; }
+      if (!line || !model) { alert("Vui lòng chọn Line và Model trước khi thêm!"); return; }
 
       jigData.push({
         id: Date.now(), line, model,
@@ -687,26 +694,34 @@
       renderLineMachinesSetting();
 
       const linesContainer = document.getElementById('linesListContainer');
-      linesContainer.innerHTML = lines.map((l, index) => `
-        <div class="list-item-manage">
-          <span><b>Line:</b> ${l}</span>
-          <div class="flex-row">
-            <button class="btn-warning action-btn" style="width:auto;" onclick="editLine(${index})">✏️ Sửa</button>
-            <button class="btn-danger action-btn" style="width:auto;" onclick="deleteLine(${index})">🗑️ Xóa</button>
+      if (lines.length === 0) {
+        linesContainer.innerHTML = '<div style="color:var(--muted); font-style:italic;">Chưa có Line nào.</div>';
+      } else {
+        linesContainer.innerHTML = lines.map((l, index) => `
+          <div class="list-item-manage">
+            <span><b>Line:</b> ${l}</span>
+            <div class="flex-row">
+              <button class="btn-warning action-btn" style="width:auto;" onclick="editLine(${index})">✏️ Sửa</button>
+              <button class="btn-danger action-btn" style="width:auto;" onclick="deleteLine(${index})">🗑️ Xóa</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       const modelsContainer = document.getElementById('modelsListContainer');
-      modelsContainer.innerHTML = models.map((m, index) => `
-        <div class="list-item-manage">
-          <span><b>Model:</b> ${m}</span>
-          <div class="flex-row">
-            <button class="btn-warning action-btn" style="width:auto;" onclick="editModel(${index})">✏️ Sửa</button>
-            <button class="btn-danger action-btn" style="width:auto;" onclick="deleteModel(${index})">🗑️ Xóa</button>
+      if (models.length === 0) {
+        modelsContainer.innerHTML = '<div style="color:var(--muted); font-style:italic;">Chưa có Model nào được thêm.</div>';
+      } else {
+        modelsContainer.innerHTML = models.map((m, index) => `
+          <div class="list-item-manage">
+            <span><b>Model:</b> ${m}</span>
+            <div class="flex-row">
+              <button class="btn-warning action-btn" style="width:auto;" onclick="editModel(${index})">✏️ Sửa</button>
+              <button class="btn-danger action-btn" style="width:auto;" onclick="deleteModel(${index})">🗑️ Xóa</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       renderSummary();
     }
@@ -720,7 +735,7 @@
       const mList = lineMachines[line] || [];
 
       if (mList.length === 0) {
-        container.innerHTML = '<div style="color:var(--muted); font-style:italic;">Chưa có máy nào được thêm vào Line này.</div>';
+        container.innerHTML = `<div style="color:var(--muted); font-style:italic;">Chưa có máy nào được thêm vào Line ${line}.</div>`;
         return;
       }
 
@@ -740,7 +755,9 @@
       const input = document.getElementById('newMachineInput');
       const val = input.value.trim();
 
-      if (!line || !val) return;
+      if (!line) { alert("Vui lòng chọn Line!"); return; }
+      if (!val) return;
+      
       if (!lineMachines[line]) lineMachines[line] = [];
 
       if (lineMachines[line].includes(val)) {
@@ -791,6 +808,11 @@
     function renderSummary() {
       const summaryContainer = document.getElementById('lineSummaryContainer');
       let html = '';
+
+      if (lines.length === 0) {
+        summaryContainer.innerHTML = '<div style="color: var(--muted); font-style: italic;">Chưa có Line nào.</div>';
+        return;
+      }
 
       lines.forEach(line => {
         const autoModels = autoData.filter(d => d.line === line && Object.keys(d).some(k => !['id','line','model','may'].includes(k) && d[k] !== ''));
