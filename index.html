@@ -215,12 +215,6 @@
       box-shadow: 0 0 0 2px rgba(0,122,255,0.15);
     }
 
-    .cell-input-header {
-      font-weight: 600;
-      background: #f0f8ff;
-      border-color: #b8d8ff;
-    }
-
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -229,13 +223,6 @@
       min-height: unset;
       padding: 3px 4px;
       font-size: 11px;
-    }
-
-    .btn-insert {
-      background: #e5f1ff;
-      color: var(--primary);
-      border: 1px dashed var(--primary);
-      margin-bottom: 2px;
     }
 
     .list-item-manage {
@@ -284,24 +271,124 @@
       margin-left: 3px;
     }
     
-    /* Phân biệt nhóm ốc 1 và ốc 2 trong Tab Học tự động */
-.auto-group-1 td {
-  background: #f0fff4;
-}
+    /* Phân biệt nhóm ốc 1 và ốc 2 */
+    .auto-group-1 td { background: #f0fff4; }
+    .auto-group-1 .sticky-col { background: #e5f9ec !important; }
+    .auto-group-2 td { background: #fffbea; }
+    .auto-group-2 .sticky-col { background: #fff6d9 !important; }
 
-.auto-group-1 .sticky-col {
-  background: #e5f9ec !important;
-}
+    /* CSS Riêng cho Tab Ốc */
+    .screw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-.auto-group-2 td {
-  background: #fffbea;
-}
+    .screw-card {
+      border: 1px solid #e5e5ea;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
 
-.auto-group-2 .sticky-col {
-  background: #fff6d9 !important;
-}
+    /* Ảnh hình vuông (1:1) */
+    .screw-img-wrapper {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #eee;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
 
-    
+    .screw-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Cắt ảnh vừa vặn hình vuông */
+      display: block;
+    }
+
+    .screw-info {
+      font-size: 11px;
+      width: 100%;
+      word-break: break-word;
+      margin-bottom: 4px;
+    }
+
+    .screw-code {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .screw-size {
+      color: #555;
+      margin-top: 2px;
+    }
+
+    .preview-img-container {
+      margin-top: 6px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .preview-img-wrapper {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      overflow: hidden;
+      display: none;
+    }
+
+    .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* MODAL XEM ẢNH PHÓNG TO KÈM NÚT THOÁT */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .image-modal-content {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+
+    .image-modal-close {
+      margin-top: 15px;
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
@@ -313,9 +400,9 @@
       <span>Học tự động</span>
     </div>
     <div class="tab-divider"></div>
-    <div class="tab-item" onclick="switchTab('jig', this)">
-      <span class="icon">🔧</span>
-      <span>Học đồ gá</span>
+    <div class="tab-item" onclick="switchTab('screw', this)">
+      <span class="icon">🔩</span>
+      <span>Ốc</span>
     </div>
     <div class="tab-divider"></div>
     <div class="tab-item" onclick="switchTab('settings', this)">
@@ -349,41 +436,58 @@
       </div>
     </div>
 
-    <!-- TAB 2: HỌC ĐỒ GÁ -->
-    <div id="tab-jig" class="tab-content">
+    <!-- TAB 2: QUẢN LÝ ỐC -->
+    <div id="tab-screw" class="tab-content">
       <div class="card">
-        <h2>🔧 Thông số Học đồ gá</h2>
-        <div class="filter-group">
+        <h2 id="screwFormTitle">🔩 Thêm Ốc Mới</h2>
+        <input type="hidden" id="editingScrewId" value="">
+        
+        <div style="display: flex; flex-direction: column; gap: 6px;">
           <div>
-            <label for="jigLineSelect">Chọn Line</label>
-            <select id="jigLineSelect" onchange="renderJigMatrix()"></select>
+            <label for="screwCodeInput">Mã ốc (*)</label>
+            <input type="text" id="screwCodeInput" placeholder="Ví dụ: M3x8-01..." style="margin-bottom: 4px;">
           </div>
           <div>
-            <label for="jigModelSelect">Chọn Model</label>
-            <select id="jigModelSelect" onchange="renderJigMatrix()"></select>
+            <label for="screwSizeInput">Kích thước ốc (*)</label>
+            <input type="text" id="screwSizeInput" placeholder="Ví dụ: M3 x 8mm..." style="margin-bottom: 4px;">
+          </div>
+          <div>
+            <label>Hình ảnh ốc</label>
+            <div class="flex-row">
+              <button class="btn-primary" onclick="document.getElementById('screwCameraInput').click()">📸 Chụp ảnh</button>
+              <button class="btn-warning" onclick="document.getElementById('screwFileInput').click()">📁 Chọn từ máy</button>
+            </div>
+            <input type="file" id="screwCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleScrewImageSelect(event)">
+            <input type="file" id="screwFileInput" accept="image/*" style="display:none" onchange="handleScrewImageSelect(event)">
+          </div>
+
+          <div class="preview-img-container">
+            <div id="screwImgPreviewWrapper" class="preview-img-wrapper">
+              <img id="screwImgPreview" class="preview-img" src="" alt="Xem trước ảnh">
+            </div>
+          </div>
+
+          <div class="flex-row">
+            <button id="saveScrewBtn" class="btn-success" onclick="saveScrew()" style="height: 36px; margin-top: 4px;">+ Thêm vào danh sách</button>
+            <button id="cancelEditScrewBtn" class="btn-danger" onclick="cancelScrewEdit()" style="height: 36px; margin-top: 4px; display: none;">Hủy sửa</button>
           </div>
         </div>
+      </div>
 
-        <button class="btn-primary" onclick="addJigCol()" style="margin-bottom: 8px; height: 30px;">+ Thêm trạm cuối</button>
-
-        <div class="table-wrapper">
-          <table id="jigMatrixTable">
-            <tbody id="jigMatrixBody"></tbody>
-          </table>
-        </div>
+      <div class="card">
+        <h2>📋 Danh sách Ốc đã thêm</h2>
+        <div id="screwListContainer" class="screw-grid"></div>
       </div>
     </div>
 
     <!-- TAB 3: CÀI ĐẶT -->
     <div id="tab-settings" class="tab-content">
 
-      <!-- MỤC THỐNG KÊ MODEL THEO LINE -->
       <div class="card">
         <h2>📋 Thống kê Dữ liệu đã ghi theo Line</h2>
         <div id="lineSummaryContainer"></div>
       </div>
 
-      <!-- CÀI ĐẶT TÊN MÁY CỐ ĐỊNH THEO LINE -->
       <div class="card">
         <h2>🤖 Cài đặt Tên máy cố định theo Line</h2>
         <label for="settingLineSelect">Chọn Line để thiết lập danh sách máy</label>
@@ -392,7 +496,7 @@
         <div id="lineMachinesListContainer" style="margin-top: 8px;"></div>
         
         <div class="flex-row" style="margin-top: 8px;">
-          <input type="text" id="newMachineInput" placeholder="Tên máy mới (ví dụ: Máy 1, Máy Bán Ốc...)..." style="margin-bottom:0;">
+          <input type="text" id="newMachineInput" placeholder="Tên máy mới..." style="margin-bottom:0;">
           <button class="btn-primary" onclick="addNewMachineToLine()" style="width: auto; white-space: nowrap;">+ Thêm máy</button>
         </div>
       </div>
@@ -401,7 +505,7 @@
         <h2>📍 Quản lý Danh sách Line</h2>
         <div id="linesListContainer"></div>
         <div class="flex-row" style="margin-top: 8px;">
-          <input type="text" id="newLineInput" placeholder="Tên Line mới (ví dụ: A6A)..." style="margin-bottom:0;">
+          <input type="text" id="newLineInput" placeholder="Tên Line mới..." style="margin-bottom:0;">
           <button class="btn-primary" onclick="addNewLine()" style="width: auto; white-space: nowrap;">Thêm Line</button>
         </div>
       </div>
@@ -426,36 +530,34 @@
 
   </div>
 
-  <script>
-    // Danh sách Line mặc định (bao gồm cả A1A)
-    const DEFAULT_LINES = ["A1A", "A1B", "A2A", "A2B", "A3A", "A3B", "A4A", "A4B", "A5A", "A5B"];
-    
-    // Mặc định danh sách Model trống
-    const DEFAULT_MODELS = [];
+  <!-- MODAL BÀN XEM ẢNH LỚN KÈM NÚT THOÁT -->
+  <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+    <img id="imageModalImg" class="image-modal-content" src="" alt="Ảnh phóng to" onclick="event.stopPropagation()">
+    <button class="image-modal-close" onclick="closeImageModal(event)">✕ Thoát xem ảnh</button>
+  </div>
 
-    // Mặc định tất cả các Line KHÔNG CÓ MÁY NÀO
+  <script>
+    const DEFAULT_LINES = ["A1A", "A1B", "A2A", "A2B", "A3A", "A3B", "A4A", "A4B", "A5A", "A5B"];
+    const DEFAULT_MODELS = [];
     const DEFAULT_LINE_MACHINES = {
-      "A1A": [],
-      "A3A": [],
-      "A3B": [],
-      "A4A": [],
-      "A4B": [],
-      "A5A": [],
-      "A5B": []
+      "A1A": [], "A1B": [], "A2A": [], "A2B": [],
+      "A3A": [], "A3B": [], "A4A": [], "A4B": [],
+      "A5A": [], "A5B": []
     };
 
     let lines = [];
     let models = [];
     let lineMachines = {};
     let autoData = [];
-    let jigData = [];
+    let screwData = [];
+    let tempScrewImageBase64 = "";
 
     function loadData() {
       lines = JSON.parse(localStorage.getItem("app_lines")) || DEFAULT_LINES;
       models = JSON.parse(localStorage.getItem("app_models")) || DEFAULT_MODELS;
       lineMachines = JSON.parse(localStorage.getItem("app_line_machines")) || DEFAULT_LINE_MACHINES;
       autoData = JSON.parse(localStorage.getItem("app_auto_data")) || [];
-      jigData = JSON.parse(localStorage.getItem("app_jig_data")) || [];
+      screwData = JSON.parse(localStorage.getItem("app_screw_data")) || [];
 
       lines.forEach(l => {
         if (!lineMachines[l]) lineMachines[l] = [];
@@ -469,23 +571,23 @@
       localStorage.setItem("app_models", JSON.stringify(models));
       localStorage.setItem("app_line_machines", JSON.stringify(lineMachines));
       localStorage.setItem("app_auto_data", JSON.stringify(autoData));
-      localStorage.setItem("app_jig_data", JSON.stringify(jigData));
+      localStorage.setItem("app_screw_data", JSON.stringify(screwData));
     }
 
     function resetToDefaults() {
-      if (confirm("Thao tác này sẽ đặt lại ứng dụng: Tất cả các Line sẽ KHÔNG CÓ máy nào và CHƯA CÓ dữ liệu Model nào. Bạn có chắc không?")) {
+      if (confirm("Thao tác này sẽ đặt lại ứng dụng: Xoá tất cả dữ liệu đã lưu. Bạn có chắc không?")) {
         lines = DEFAULT_LINES;
         models = DEFAULT_MODELS;
         lineMachines = {
-          "A1A": [], "A1B": [], "A2A": [], "A2B": [],  "A3A": [], "A3B": [], "A4A": [], "A4B": [], "A5A": [], "A5B": []
+          "A1A": [], "A1B": [], "A2A": [], "A2B": [], "A3A": [], "A3B": [], "A4A": [], "A4B": [], "A5A": [], "A5B": []
         };
         autoData = [];
-        jigData = [];
+        screwData = [];
         saveData();
         updateSelectOptions();
         renderSettings();
         renderAutoMatrix();
-        renderJigMatrix();
+        renderScrewList();
         alert("Đã xóa toàn bộ dữ liệu và đặt lại trạng thái mặc định!");
       }
     }
@@ -501,8 +603,6 @@
 
       document.getElementById('autoLineSelect').innerHTML = lineOptions;
       document.getElementById('autoModelSelect').innerHTML = modelOptions;
-      document.getElementById('jigLineSelect').innerHTML = lineOptions;
-      document.getElementById('jigModelSelect').innerHTML = modelOptions;
       document.getElementById('settingLineSelect').innerHTML = lineOptions;
     }
 
@@ -514,7 +614,7 @@
       el.classList.add('active');
 
       if (tabName === 'auto') renderAutoMatrix();
-      else if (tabName === 'jig') renderJigMatrix();
+      else if (tabName === 'screw') renderScrewList();
       else if (tabName === 'settings') renderSettings();
     }
 
@@ -565,29 +665,21 @@
         return;
       }
 
-      let html = '';
-
-      // Hàng Tiêu Đề Cố Định Tên Máy
-      html += `<tr>`;
-      html += `<td class="sticky-col">Máy</td>`;
+      let html = '<tr><td class="sticky-col">Máy</td>';
       machinesList.forEach(mName => {
         html += `<td class="col-item cell-header-fixed">${mName}</td>`;
       });
-      html += `</tr>`;
+      html += '</tr>';
 
-      // Các hàng thông số
       AUTO_FIELDS.forEach(field => {
-        
         let rowClass = '';
-
         if (['maOc1', 'soOc1', 'lucVit1'].includes(field.key)) {
-        rowClass = 'auto-group-1';
-         } else if (['maOc2', 'soOc2', 'lucVit2'].includes(field.key)) {
-        rowClass = 'auto-group-2';
-         }
+          rowClass = 'auto-group-1';
+        } else if (['maOc2', 'soOc2', 'lucVit2'].includes(field.key)) {
+          rowClass = 'auto-group-2';
+        }
+        
         html += `<tr class="${rowClass}">`;
-        
-        
         html += `<td class="sticky-col">${field.label}</td>`;
         machinesList.forEach(mName => {
           const item = autoData.find(d => d.line === selectedLine && d.model === selectedModel && d.may === mName);
@@ -597,7 +689,7 @@
             <textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoValue('${selectedLine}', '${selectedModel}', '${mName}', '${field.key}', this.value)">${val}</textarea>
           </td>`;
         });
-        html += `</tr>`;
+        html += '</tr>';
       });
 
       tbody.innerHTML = html;
@@ -617,109 +709,171 @@
       saveData();
     }
 
-    /* ===== TAB 2: HỌC ĐỒ GÁ ===== */
-    const JIG_FIELDS = [
-      { key: 'tram', label: 'Trạm', isHeader: true },
-      { key: 'tenDoGa', label: 'Tên đồ gá' },
-      { key: 'thongSo', label: 'Thông số' },
-      { key: 'ghiChu', label: 'Ghi chú' }
-    ];
+    /* ===== TAB 2: QUẢN LÝ ỐC ===== */
+    function handleScrewImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    function renderJigMatrix() {
-      const selectedLine = document.getElementById('jigLineSelect').value;
-      const selectedModel = document.getElementById('jigModelSelect').value;
-      const tbody = document.getElementById('jigMatrixBody');
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 600;
+          let width = img.width;
+          let height = img.height;
 
-      if (!selectedLine || !selectedModel) {
-        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Vui lòng chọn Line và Model (hoặc thêm Model trong Cài đặt).</td></tr>';
-        return;
-      }
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
 
-      const filteredData = jigData.filter(d => d.line === selectedLine && d.model === selectedModel);
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
 
-      if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Chưa có trạm nào. Nhấn nút "+ Thêm trạm cuối" phía trên.</td></tr>';
-        return;
-      }
+          tempScrewImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
-      let html = '';
-
-      JIG_FIELDS.forEach(field => {
-        html += `<tr>`;
-        html += `<td class="sticky-col">${field.label}</td>`;
-        filteredData.forEach(item => {
-          const inputClass = field.isHeader ? 'cell-input cell-input-header' : 'cell-input';
-          const placeholder = field.isHeader ? 'Tên trạm...' : '';
-          html += `<td class="col-item">
-            <textarea class="${inputClass}" placeholder="${placeholder}" oninput="autoResizeTextarea(this)" onchange="updateJigItem(${item.id}, '${field.key}', this.value)">${item[field.key] || ''}</textarea>
-          </td>`;
-        });
-        html += `</tr>`;
-      });
-
-      html += `<tr>`;
-      html += `<td class="sticky-col">Thao tác</td>`;
-      filteredData.forEach(item => {
-        html += `<td class="col-item">
-          <button class="action-btn btn-insert" onclick="insertJigColBefore(${item.id})">➕ Chèn trạm trước</button>
-          <button class="btn-danger action-btn" onclick="deleteJigItem(${item.id})">🗑️ Xóa trạm</button>
-        </td>`;
-      });
-      html += `</tr>`;
-
-      tbody.innerHTML = html;
-
-      setTimeout(() => {
-        document.querySelectorAll('#jigMatrixTable .cell-input').forEach(el => autoResizeTextarea(el));
-      }, 0);
-    }
-
-    function addJigCol() {
-      const line = document.getElementById('jigLineSelect').value;
-      const model = document.getElementById('jigModelSelect').value;
-      if (!line || !model) { alert("Vui lòng chọn Line và Model trước khi thêm!"); return; }
-
-      jigData.push({
-        id: Date.now(), line, model,
-        tram: 'Trạm ' + (jigData.filter(d => d.line === line && d.model === model).length + 1),
-        tenDoGa: '', thongSo: '', ghiChu: ''
-      });
-      saveData();
-      renderJigMatrix();
-    }
-
-    function insertJigColBefore(targetId) {
-      const targetIndex = jigData.findIndex(d => d.id === targetId);
-      if (targetIndex === -1) return;
-
-      const targetItem = jigData[targetIndex];
-      const newItem = {
-        id: Date.now(),
-        line: targetItem.line,
-        model: targetItem.model,
-        tram: 'Trạm mới',
-        tenDoGa: '', thongSo: '', ghiChu: ''
+          const previewWrapper = document.getElementById('screwImgPreviewWrapper');
+          const previewEl = document.getElementById('screwImgPreview');
+          previewEl.src = tempScrewImageBase64;
+          previewWrapper.style.display = 'block';
+        };
       };
+      reader.readAsDataURL(file);
+    }
 
-      jigData.splice(targetIndex, 0, newItem);
+    function saveScrew() {
+      const code = document.getElementById('screwCodeInput').value.trim();
+      const size = document.getElementById('screwSizeInput').value.trim();
+      const editingId = document.getElementById('editingScrewId').value;
+
+      if (!code) { alert("Vui lòng nhập Mã ốc!"); return; }
+      if (!size) { alert("Vui lòng nhập Kích thước ốc!"); return; }
+
+      if (editingId) {
+        // Cập nhật thông tin ốc đã có
+        const screw = screwData.find(s => s.id == editingId);
+        if (screw) {
+          screw.code = code;
+          screw.size = size;
+          if (tempScrewImageBase64) {
+            screw.image = tempScrewImageBase64;
+          }
+        }
+      } else {
+        // Thêm ốc mới
+        const newScrew = {
+          id: Date.now(),
+          code: code,
+          size: size,
+          image: tempScrewImageBase64 || ""
+        };
+        screwData.unshift(newScrew);
+      }
+
       saveData();
-      renderJigMatrix();
+      cancelScrewEdit();
+      renderScrewList();
     }
 
-    function updateJigItem(id, field, value) {
-      const item = jigData.find(d => d.id === id);
-      if (item) {
-        item[field] = value;
+    function editScrew(id) {
+      const screw = screwData.find(s => s.id === id);
+      if (!screw) return;
+
+      document.getElementById('screwFormTitle').innerText = "✏️ Cập nhật Thông tin Ốc";
+      document.getElementById('editingScrewId').value = screw.id;
+      document.getElementById('screwCodeInput').value = screw.code;
+      document.getElementById('screwSizeInput').value = screw.size;
+
+      const previewWrapper = document.getElementById('screwImgPreviewWrapper');
+      const previewEl = document.getElementById('screwImgPreview');
+
+      if (screw.image) {
+        previewEl.src = screw.image;
+        previewWrapper.style.display = 'block';
+      } else {
+        previewWrapper.style.display = 'none';
+        previewEl.src = '';
+      }
+
+      tempScrewImageBase64 = ""; // Reset ảnh tạm
+      document.getElementById('saveScrewBtn').innerText = "💾 Cập nhật";
+      document.getElementById('cancelEditScrewBtn').style.display = 'block';
+
+      // Cuộn lên form
+      document.getElementById('tab-screw').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelScrewEdit() {
+      document.getElementById('screwFormTitle').innerText = "🔩 Thêm Ốc Mới";
+      document.getElementById('editingScrewId').value = "";
+      document.getElementById('screwCodeInput').value = "";
+      document.getElementById('screwSizeInput').value = "";
+      document.getElementById('screwCameraInput').value = "";
+      document.getElementById('screwFileInput').value = "";
+      document.getElementById('screwImgPreviewWrapper').style.display = 'none';
+      document.getElementById('screwImgPreview').src = "";
+      tempScrewImageBase64 = "";
+
+      document.getElementById('saveScrewBtn').innerText = "+ Thêm vào danh sách";
+      document.getElementById('cancelEditScrewBtn').style.display = 'none';
+    }
+
+    function renderScrewList() {
+      const container = document.getElementById('screwListContainer');
+
+      if (screwData.length === 0) {
+        container.innerHTML = '<div style="color:var(--muted); font-style:italic; grid-column: 1 / -1; text-align:center; padding: 10px;">Chưa có loại ốc nào được thêm.</div>';
+        return;
+      }
+
+      const defaultImg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="21 15l-5-5L5 21"/></svg>';
+
+      container.innerHTML = screwData.map(item => `
+        <div class="screw-card">
+          <div class="screw-img-wrapper" onclick="openImageModal('${item.image || defaultImg}')">
+            <img class="screw-img" src="${item.image || defaultImg}" alt="${item.code}">
+          </div>
+          <div class="screw-info">
+            <div class="screw-code">${item.code}</div>
+            <div class="screw-size">${item.size}</div>
+          </div>
+          <div class="flex-row" style="width:100%; gap:4px;">
+            <button class="btn-warning action-btn" onclick="editScrew(${item.id})">✏️ Sửa</button>
+            <button class="btn-danger action-btn" onclick="deleteScrew(${item.id})">🗑️ Xóa</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteScrew(id) {
+      if (confirm("Bạn có chắc muốn xóa loại ốc này?")) {
+        screwData = screwData.filter(d => d.id !== id);
         saveData();
+        renderScrewList();
       }
     }
 
-    function deleteJigItem(id) {
-      if (confirm("Xóa trạm này?")) {
-        jigData = jigData.filter(d => d.id !== id);
-        saveData();
-        renderJigMatrix();
-      }
+    /* Modal hiển thị ảnh lớn & Nút Thoát */
+    function openImageModal(imgSrc) {
+      if (!imgSrc) return;
+      document.getElementById('imageModalImg').src = imgSrc;
+      document.getElementById('imageModal').style.display = 'flex';
+    }
+
+    function closeImageModal(e) {
+      document.getElementById('imageModal').style.display = 'none';
+      document.getElementById('imageModalImg').src = '';
     }
 
     /* ===== TAB 3: CÀI ĐẶT ===== */
@@ -759,7 +913,6 @@
       renderSummary();
     }
 
-    /* --- CÀI ĐẶT DANH SÁCH MÁY CỐ ĐỊNH THEO LINE --- */
     function renderLineMachinesSetting() {
       const line = document.getElementById('settingLineSelect').value;
       const container = document.getElementById('lineMachinesListContainer');
@@ -837,7 +990,6 @@
       }
     }
 
-    /* --- HIỂN THỊ LIỆT KÊ MODEL ĐÃ GHI THEO LINE --- */
     function renderSummary() {
       const summaryContainer = document.getElementById('lineSummaryContainer');
       let html = '';
@@ -849,21 +1001,8 @@
 
       lines.forEach(line => {
         const autoModels = autoData.filter(d => d.line === line && Object.keys(d).some(k => !['id','line','model','may'].includes(k) && d[k] !== ''));
-        const jigModels = jigData.filter(d => d.line === line);
 
-        const modelStats = {};
-
-        autoModels.forEach(item => {
-          if (!modelStats[item.model]) modelStats[item.model] = { hasAuto: true, jigCount: 0 };
-          else modelStats[item.model].hasAuto = true;
-        });
-
-        jigModels.forEach(item => {
-          if (!modelStats[item.model]) modelStats[item.model] = { hasAuto: false, jigCount: 0 };
-          modelStats[item.model].jigCount++;
-        });
-
-        const recordedModels = Object.keys(modelStats);
+        const recordedModels = [...new Set(autoModels.map(item => item.model))];
 
         html += `<div class="stat-line-block">`;
         html += `<div class="stat-line-title">📍 Line: ${line}</div>`;
@@ -872,12 +1011,7 @@
           html += `<div style="color: var(--muted); font-style: italic;">Chưa có dữ liệu thông số nào được ghi.</div>`;
         } else {
           recordedModels.forEach(modelName => {
-            const stat = modelStats[modelName];
-            let details = [];
-            if (stat.hasAuto) details.push(`Tự động`);
-            if (stat.jigCount > 0) details.push(`${stat.jigCount} trạm đồ gá`);
-
-            html += `<span class="stat-model-tag">📱 ${modelName} <span class="badge-count">${details.join(' + ')}</span></span>`;
+            html += `<span class="stat-model-tag">📱 ${modelName} <span class="badge-count">Tự động</span></span>`;
           });
         }
         html += `</div>`;
@@ -886,7 +1020,6 @@
       summaryContainer.innerHTML = html;
     }
 
-    /* --- CÁC THAO TÁC SỬA / XÓA LINE & MODEL --- */
     function addNewLine() {
       const val = document.getElementById('newLineInput').value.trim();
       if (!val) return;
@@ -912,7 +1045,6 @@
         delete lineMachines[oldName];
 
         autoData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
-        jigData.forEach(d => { if (d.line === oldName) d.line = trimmed; });
 
         saveData();
         updateSelectOptions();
@@ -951,9 +1083,7 @@
         if (models.includes(trimmed)) { alert("Tên Model này đã trùng với Model khác!"); return; }
 
         models[index] = trimmed;
-
         autoData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
-        jigData.forEach(d => { if (d.model === oldName) d.model = trimmed; });
 
         saveData();
         updateSelectOptions();
@@ -972,7 +1102,7 @@
 
     /* ===== XUẤT / NHẬP DỮ LIỆU ===== */
     function exportData() {
-      const fullData = { lines, models, lineMachines, autoData, jigData };
+      const fullData = { lines, models, lineMachines, autoData, screwData };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
@@ -994,7 +1124,7 @@
           if (parsed.models) models = parsed.models;
           if (parsed.lineMachines) lineMachines = parsed.lineMachines;
           if (parsed.autoData) autoData = parsed.autoData;
-          if (parsed.jigData) jigData = parsed.jigData;
+          if (parsed.screwData) screwData = parsed.screwData;
 
           saveData();
           updateSelectOptions();
