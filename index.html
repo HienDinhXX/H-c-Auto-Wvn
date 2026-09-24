@@ -215,6 +215,22 @@
       box-shadow: 0 0 0 2px rgba(0,122,255,0.15);
     }
 
+    /* Ô XEM DỮ LIỆU (READ-ONLY / SO SÁNH CŨ) */
+    .cell-view-only {
+      width: 100%;
+      min-height: 26px;
+      padding: 4px 6px;
+      font-size: 12px;
+      line-height: 1.3;
+      background: #f9f9fb;
+      border: 1px solid #e5e5ea;
+      border-radius: 4px;
+      color: #3a3a3c;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+    }
+
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -297,7 +313,6 @@
       position: relative;
     }
 
-    /* Ảnh hình vuông (1:1) */
     .screw-img-wrapper {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -312,7 +327,7 @@
     .screw-img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Cắt ảnh vừa vặn hình vuông */
+      object-fit: cover;
       display: block;
     }
 
@@ -356,7 +371,6 @@
       object-fit: cover;
     }
 
-    /* MODAL XEM ẢNH PHÓNG TO KÈM NÚT THOÁT */
     .image-modal {
       display: none;
       position: fixed;
@@ -397,7 +411,7 @@
   <div class="tab-bar">
     <div class="tab-item active" onclick="switchTab('auto', this)">
       <span class="icon">🤖</span>
-      <span>Học tự động</span>
+      <span>Automation</span>
     </div>
     <div class="tab-divider"></div>
     <div class="tab-item" onclick="switchTab('screw', this)">
@@ -415,22 +429,43 @@
 
     <!-- TAB 1: HỌC TỰ ĐỘNG -->
     <div id="tab-auto" class="tab-content active">
+      <!-- KHỐI 1: NHẬP LIỆU THÔNG SỐ HỌC TỰ ĐỘNG -->
       <div class="card">
-        <h2>🤖 Thông số Học tự động</h2>
+        <h2>Machine By Model & Line</h2>
         <div class="filter-group">
           <div>
             <label for="autoLineSelect">Chọn Line</label>
-            <select id="autoLineSelect" onchange="renderAutoMatrix()"></select>
+            <select id="autoLineSelect" onchange="onAutoFilterChange()"></select>
           </div>
           <div>
             <label for="autoModelSelect">Chọn Model</label>
-            <select id="autoModelSelect" onchange="renderAutoMatrix()"></select>
+            <select id="autoModelSelect" onchange="onAutoFilterChange()"></select>
           </div>
         </div>
 
         <div class="table-wrapper">
           <table id="autoMatrixTable">
             <tbody id="autoMatrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- KHỐI 2: SO SÁNH CŨ (READ-ONLY BỘ LỌC RIÊNG) -->
+      <div class="card">
+        
+        <div class="filter-group">
+          <div>
+            <select id="oldLineSelect" onchange="renderOldCompareMatrix()"></select>
+          </div>
+          <div>
+          
+            <select id="oldModelSelect" onchange="renderOldCompareMatrix()"></select>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="oldCompareMatrixTable">
+            <tbody id="oldCompareMatrixBody"></tbody>
           </table>
         </div>
       </div>
@@ -530,7 +565,7 @@
 
   </div>
 
-  <!-- MODAL BÀN XEM ẢNH LỚN KÈM NÚT THOÁT -->
+  <!-- MODAL XEM ẢNH LỚN -->
   <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
     <img id="imageModalImg" class="image-modal-content" src="" alt="Ảnh phóng to" onclick="event.stopPropagation()">
     <button class="image-modal-close" onclick="closeImageModal(event)">✕ Thoát xem ảnh</button>
@@ -587,6 +622,7 @@
         updateSelectOptions();
         renderSettings();
         renderAutoMatrix();
+        renderOldCompareMatrix();
         renderScrewList();
         alert("Đã xóa toàn bộ dữ liệu và đặt lại trạng thái mặc định!");
       }
@@ -603,6 +639,10 @@
 
       document.getElementById('autoLineSelect').innerHTML = lineOptions;
       document.getElementById('autoModelSelect').innerHTML = modelOptions;
+      
+      document.getElementById('oldLineSelect').innerHTML = lineOptions;
+      document.getElementById('oldModelSelect').innerHTML = modelOptions;
+
       document.getElementById('settingLineSelect').innerHTML = lineOptions;
     }
 
@@ -613,7 +653,10 @@
       document.getElementById('tab-' + tabName).classList.add('active');
       el.classList.add('active');
 
-      if (tabName === 'auto') renderAutoMatrix();
+      if (tabName === 'auto') {
+        renderAutoMatrix();
+        renderOldCompareMatrix();
+      }
       else if (tabName === 'screw') renderScrewList();
       else if (tabName === 'settings') renderSettings();
     }
@@ -625,7 +668,7 @@
       }
     }
 
-    /* ===== TAB 1: HỌC TỰ ĐỘNG ===== */
+    /* ===== TAB 1: HỌC TỰ ĐỘNG & SO SÁNH CŨ ===== */
     const AUTO_FIELDS = [
       { key: 'congDung', label: 'Công dụng' },
       { key: 'maOc1', label: 'Mã ốc hộp 1' },
@@ -637,6 +680,19 @@
       { key: 'ghiChu', label: 'Ghi chú' }
     ];
 
+    function onAutoFilterChange() {
+      const autoLine = document.getElementById('autoLineSelect').value;
+      const autoModel = document.getElementById('autoModelSelect').value;
+      
+      // Tự động đồng bộ sang bộ lọc bên dưới để tiện so sánh mặc định
+      document.getElementById('oldLineSelect').value = autoLine;
+      document.getElementById('oldModelSelect').value = autoModel;
+
+      renderAutoMatrix();
+      renderOldCompareMatrix();
+    }
+
+    // 1. Render Bảng Nhập Liệu
     function renderAutoMatrix() {
       const selectedLine = document.getElementById('autoLineSelect').value;
       const selectedModel = document.getElementById('autoModelSelect').value;
@@ -665,11 +721,13 @@
         return;
       }
 
-      let html = '<tr><td class="sticky-col">Máy</td>';
+      let headerRow = '<tr><td class="sticky-col">Máy</td>';
       machinesList.forEach(mName => {
-        html += `<td class="col-item cell-header-fixed">${mName}</td>`;
+        headerRow += `<td class="col-item cell-header-fixed">${mName}</td>`;
       });
-      html += '</tr>';
+      headerRow += '</tr>';
+
+      let htmlEditable = headerRow;
 
       AUTO_FIELDS.forEach(field => {
         let rowClass = '';
@@ -679,24 +737,83 @@
           rowClass = 'auto-group-2';
         }
         
-        html += `<tr class="${rowClass}">`;
-        html += `<td class="sticky-col">${field.label}</td>`;
+        htmlEditable += `<tr class="${rowClass}">`;
+        htmlEditable += `<td class="sticky-col">${field.label}</td>`;
+
         machinesList.forEach(mName => {
           const item = autoData.find(d => d.line === selectedLine && d.model === selectedModel && d.may === mName);
           const val = item ? (item[field.key] || '') : '';
           
-          html += `<td class="col-item">
+          htmlEditable += `<td class="col-item">
             <textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoValue('${selectedLine}', '${selectedModel}', '${mName}', '${field.key}', this.value)">${val}</textarea>
           </td>`;
         });
-        html += '</tr>';
+
+        htmlEditable += '</tr>';
       });
 
-      tbody.innerHTML = html;
+      tbody.innerHTML = htmlEditable;
 
       setTimeout(() => {
         document.querySelectorAll('#autoMatrixTable .cell-input').forEach(el => autoResizeTextarea(el));
       }, 0);
+    }
+
+    // 2. Render Bảng So Sánh Cũ (Read-only, Bộ Lọc Độc Lập)
+    function renderOldCompareMatrix() {
+      const selectedLine = document.getElementById('oldLineSelect').value;
+      const selectedModel = document.getElementById('oldModelSelect').value;
+      const tbody = document.getElementById('oldCompareMatrixBody');
+
+      if (!selectedLine) {
+        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Chưa chọn Line so sánh.</td></tr>';
+        return;
+      }
+
+      if (!selectedModel) {
+        tbody.innerHTML = '<tr><td style="padding:15px; text-align:center; color: var(--muted);">Chưa chọn Model so sánh.</td></tr>';
+        return;
+      }
+
+      const machinesList = lineMachines[selectedLine] || [];
+
+      if (machinesList.length === 0) {
+        tbody.innerHTML = `<tr><td style="padding:15px; text-align:center; color: var(--muted);">Line <b>${selectedLine}</b> chưa có máy.</td></tr>`;
+        return;
+      }
+
+      let headerRow = '<tr><td class="sticky-col">Máy</td>';
+      machinesList.forEach(mName => {
+        headerRow += `<td class="col-item cell-header-fixed">${mName}</td>`;
+      });
+      headerRow += '</tr>';
+
+      let htmlViewOnly = headerRow;
+
+      AUTO_FIELDS.forEach(field => {
+        let rowClass = '';
+        if (['maOc1', 'soOc1', 'lucVit1'].includes(field.key)) {
+          rowClass = 'auto-group-1';
+        } else if (['maOc2', 'soOc2', 'lucVit2'].includes(field.key)) {
+          rowClass = 'auto-group-2';
+        }
+
+        htmlViewOnly += `<tr class="${rowClass}">`;
+        htmlViewOnly += `<td class="sticky-col">${field.label}</td>`;
+
+        machinesList.forEach(mName => {
+          const item = autoData.find(d => d.line === selectedLine && d.model === selectedModel && d.may === mName);
+          const val = item ? (item[field.key] || '') : '';
+
+          htmlViewOnly += `<td class="col-item">
+            <div class="cell-view-only">${val}</div>
+          </td>`;
+        });
+
+        htmlViewOnly += '</tr>';
+      });
+
+      tbody.innerHTML = htmlViewOnly;
     }
 
     function updateAutoValue(line, model, may, field, value) {
@@ -707,6 +824,13 @@
       }
       item[field] = value;
       saveData();
+
+      // Cập nhật lại bảng So Sánh Cũ ngay lập tức nếu đang cùng soi Line/Model này
+      const oldLine = document.getElementById('oldLineSelect').value;
+      const oldModel = document.getElementById('oldModelSelect').value;
+      if (oldLine === line && oldModel === model) {
+        renderOldCompareMatrix();
+      }
     }
 
     /* ===== TAB 2: QUẢN LÝ ỐC ===== */
@@ -761,7 +885,6 @@
       if (!size) { alert("Vui lòng nhập Kích thước ốc!"); return; }
 
       if (editingId) {
-        // Cập nhật thông tin ốc đã có
         const screw = screwData.find(s => s.id == editingId);
         if (screw) {
           screw.code = code;
@@ -771,7 +894,6 @@
           }
         }
       } else {
-        // Thêm ốc mới
         const newScrew = {
           id: Date.now(),
           code: code,
@@ -806,11 +928,10 @@
         previewEl.src = '';
       }
 
-      tempScrewImageBase64 = ""; // Reset ảnh tạm
+      tempScrewImageBase64 = "";
       document.getElementById('saveScrewBtn').innerText = "💾 Cập nhật";
       document.getElementById('cancelEditScrewBtn').style.display = 'block';
 
-      // Cuộn lên form
       document.getElementById('tab-screw').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -864,7 +985,6 @@
       }
     }
 
-    /* Modal hiển thị ảnh lớn & Nút Thoát */
     function openImageModal(imgSrc) {
       if (!imgSrc) return;
       document.getElementById('imageModalImg').src = imgSrc;
@@ -1140,6 +1260,7 @@
     window.onload = function() {
       loadData();
       renderAutoMatrix();
+      renderOldCompareMatrix();
     };
   </script>
 </body>
