@@ -1090,7 +1090,8 @@
       container.innerHTML = mList.map((mName, index) => `
         <div class="list-item-manage">
           <span><b>Máy ${index + 1}:</b> ${mName}</span>
-          <div class="flex-row">
+          <div class="flex-row" style="flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn-primary action-btn" style="width:auto;" onclick="insertMachineInLine('${line}', ${index})">➕ Chèn sau</button>
             <button class="btn-warning action-btn" style="width:auto;" onclick="editMachineInLine('${line}', ${index})">✏️ Sửa</button>
             <button class="btn-danger action-btn" style="width:auto;" onclick="deleteMachineInLine('${line}', ${index})">🗑️ Xóa</button>
           </div>
@@ -1105,7 +1106,7 @@
 
       if (!line) { alert("Vui lòng chọn Line!"); return; }
       if (!val) return;
-      
+
       if (!lineMachines[line]) lineMachines[line] = [];
 
       if (lineMachines[line].includes(val)) {
@@ -1115,6 +1116,29 @@
 
       lineMachines[line].push(val);
       input.value = '';
+      saveData();
+      renderLineMachinesSetting();
+    }
+
+    // Chèn máy mới ngay SAU máy đang chọn.
+    function insertMachineInLine(line, index) {
+      if (!lineMachines[line]) lineMachines[line] = [];
+
+      const currentName = lineMachines[line][index];
+      if (currentName === undefined) return;
+
+      const newName = prompt(`Nhập tên máy mới để chèn SAU máy "${currentName}":`, "");
+      if (newName === null) return;
+
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+
+      if (lineMachines[line].includes(trimmed)) {
+        alert("Tên máy này đã có trong Line!");
+        return;
+      }
+
+      lineMachines[line].splice(index + 1, 0, trimmed);
       saveData();
       renderLineMachinesSetting();
     }
