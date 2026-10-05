@@ -1454,9 +1454,14 @@
           if (parsed.lineMachines) lineMachines = parsed.lineMachines;
           if (parsed.autoData) autoData = parsed.autoData;
           if (parsed.screwData) screwData = parsed.screwData;
+          // Khôi phục dữ liệu tab Password từ file JSON
+          if (Array.isArray(parsed.passwordNotes)) {
+            passwordNotes = parsed.passwordNotes;
+          }
 
           saveData();
           updateSelectOptions();
+          renderPasswordNotes();
           alert("Phục hồi dữ liệu thành công!");
           location.reload();
         } catch (err) {
