@@ -403,7 +403,10 @@
       cursor: pointer;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
-  </style>
+    .password-format-btn { background: #edf1f5 !important; color: #344054 !important; border: 1px solid #cbd5e1 !important; }
+  .password-format-btn.format-active { background: #334155 !important; color: #ffffff !important; border-color: #334155 !important; }
+  #passwordNoteInput:empty:before { content: attr(data-placeholder); color: #98a2b3; pointer-events: none; }
+</style>
 </head>
 <body>
 
@@ -417,6 +420,11 @@
     <div class="tab-item" onclick="switchTab('screw', this)">
       <span class="icon">🔩</span>
       <span>Screw</span>
+    </div>
+    <div class="tab-divider"></div>
+    <div class="tab-item" onclick="switchTab('password', this)">
+      <span class="icon">🔐</span>
+      <span>Password</span>
     </div>
     <div class="tab-divider"></div>
     <div class="tab-item" onclick="switchTab('settings', this)">
@@ -515,7 +523,32 @@
       </div>
     </div>
 
-    <!-- TAB 3: CÀI ĐẶT -->
+    <!-- TAB 3: PASSWORD - GHI CHÚ THÔNG THƯỜNG -->
+    <div id="tab-password" class="tab-content">
+      <div class="card">
+        <h2>🔐 Password</h2>
+        <div class="flex-row" style="align-items: stretch; margin-bottom: 8px;">
+          <input type="search" id="passwordSearchInput" placeholder="🔍 Tìm kiếm ..." oninput="renderPasswordNotes()" style="margin-bottom:0;">
+          <button class="btn-primary" onclick="renderPasswordNotes()" style="width:auto; min-width:76px;">Tìm kiếm</button>
+        </div>
+        <label for="passwordNoteInput">Nội dung</label>
+        <div id="passwordNoteInput" class="cell-input" contenteditable="true" role="textbox" aria-multiline="true" onmouseup="savePasswordSelection()" onkeyup="savePasswordSelection()" oninput="savePasswordSelection()" style="min-height:100px; padding:10px; margin-bottom:8px; white-space:pre-wrap; overflow-wrap:anywhere;"></div>
+        <div class="flex-row" style="gap:6px; align-items:center; flex-wrap:wrap;">
+          <button type="button" id="passwordBoldBtn" class="btn-primary password-format-btn" onmousedown="savePasswordSelection(); event.preventDefault()" onclick="formatPasswordNote('bold')" style="width:auto; min-width:38px;"><b>B</b></button>
+          <button type="button" id="passwordItalicBtn" class="btn-primary password-format-btn" onmousedown="savePasswordSelection(); event.preventDefault()" onclick="formatPasswordNote('italic')" style="width:auto; min-width:38px;"><i>I</i></button>
+          <button type="button" id="passwordUnderlineBtn" class="btn-primary password-format-btn" onmousedown="savePasswordSelection(); event.preventDefault()" onclick="formatPasswordNote('underline')" style="width:auto; min-width:38px;"><u>U</u></button>
+          <label style="display:flex; align-items:center; gap:4px; margin:0; white-space:nowrap;">Màu chữ <input type="color" id="passwordTextColor" value="#000000" onpointerdown="savePasswordSelection()" onchange="formatPasswordNote('foreColor', this.value)" style="width:38px; height:34px; padding:2px; margin:0;"></label>
+          <button id="passwordNoteSubmit" class="btn-success" onclick="addPasswordNote()" style="height:36px; width:auto;">+ Thêm</button>
+          <button id="passwordNoteCancel" class="btn-danger" onclick="cancelPasswordEdit()" style="height:36px; width:auto; display:none;">Hủy sửa</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📋 Danh sách </h2>
+        <div id="passwordNotesList"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CÀI ĐẶT -->
     <div id="tab-settings" class="tab-content">
 
       <div class="card">
@@ -585,6 +618,7 @@
     let lineMachines = {};
     let autoData = [];
     let screwData = [];
+    let passwordNotes = [];
     let tempScrewImageBase64 = "";
 
     function loadData() {
@@ -593,6 +627,7 @@
       lineMachines = JSON.parse(localStorage.getItem("app_line_machines")) || DEFAULT_LINE_MACHINES;
       autoData = JSON.parse(localStorage.getItem("app_auto_data")) || [];
       screwData = JSON.parse(localStorage.getItem("app_screw_data")) || [];
+      passwordNotes = JSON.parse(localStorage.getItem("app_password_notes")) || [];
 
       lines.forEach(l => {
         if (!lineMachines[l]) lineMachines[l] = [];
@@ -607,6 +642,7 @@
       localStorage.setItem("app_line_machines", JSON.stringify(lineMachines));
       localStorage.setItem("app_auto_data", JSON.stringify(autoData));
       localStorage.setItem("app_screw_data", JSON.stringify(screwData));
+      localStorage.setItem("app_password_notes", JSON.stringify(passwordNotes));
     }
 
     function resetToDefaults() {
@@ -618,12 +654,14 @@
         };
         autoData = [];
         screwData = [];
+        passwordNotes = [];
         saveData();
         updateSelectOptions();
         renderSettings();
         renderAutoMatrix();
         renderOldCompareMatrix();
         renderScrewList();
+        renderPasswordNotes();
         alert("Đã xóa toàn bộ dữ liệu và đặt lại trạng thái mặc định!");
       }
     }
@@ -658,6 +696,7 @@
         renderOldCompareMatrix();
       }
       else if (tabName === 'screw') renderScrewList();
+      else if (tabName === 'password') renderPasswordNotes();
       else if (tabName === 'settings') renderSettings();
     }
 
@@ -1221,9 +1260,178 @@
       }
     }
 
+    /* ===== TAB PASSWORD: GHI CHÚ THÔNG THƯỜNG ===== */
+    let passwordSavedRange = null;
+
+    function savePasswordSelection() {
+      const editor = document.getElementById('passwordNoteInput');
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount) {
+        const range = selection.getRangeAt(0);
+        if (editor && editor.contains(range.commonAncestorContainer)) {
+          passwordSavedRange = range.cloneRange();
+        }
+      }
+    }
+
+    function restorePasswordSelection(editor) {
+      const selection = window.getSelection();
+      if (!selection) return false;
+      if (passwordSavedRange && editor.contains(passwordSavedRange.commonAncestorContainer)) {
+        editor.focus();
+        selection.removeAllRanges();
+        selection.addRange(passwordSavedRange);
+        return true;
+      }
+      editor.focus();
+      return !!(selection.rangeCount && editor.contains(selection.getRangeAt(0).commonAncestorContainer));
+    }
+
+    function formatPasswordNote(command, value) {
+      const editor = document.getElementById('passwordNoteInput');
+      if (!restorePasswordSelection(editor)) return;
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+      if (!range || !editor.contains(range.commonAncestorContainer)) return;
+
+      if (command === 'foreColor') {
+        if (range.collapsed) {
+          // Đặt màu cho ký tự nhập tiếp theo, không làm mất caret.
+          const marker = document.createElement('span');
+          marker.style.color = value;
+          marker.appendChild(document.createTextNode('\\u200B'));
+          range.insertNode(marker);
+          const caret = document.createRange();
+          caret.setStart(marker.firstChild, 1);
+          caret.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(caret);
+        } else {
+          // execCommand giữ nguyên các định dạng lồng nhau tốt hơn khi chọn nhiều đoạn.
+          document.execCommand('styleWithCSS', false, true);
+          document.execCommand('foreColor', false, value);
+        }
+      } else {
+        document.execCommand(command, false, null);
+        const buttonId = {bold:'passwordBoldBtn', italic:'passwordItalicBtn', underline:'passwordUnderlineBtn'}[command];
+        const button = document.getElementById(buttonId);
+        if (button) button.classList.toggle('format-active', !!document.queryCommandState(command));
+      }
+      savePasswordSelection();
+    }
+
+    function sanitizePasswordHtml(html) {
+      const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      const allowed = new Set(['B','STRONG','I','EM','U','BR','DIV','P','SPAN','FONT']);
+      function clean(node) {
+        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent);
+        if (node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+        if (!allowed.has(node.tagName)) {
+          const fragment = document.createDocumentFragment();
+          [...node.childNodes].forEach(child => fragment.appendChild(clean(child)));
+          return fragment;
+        }
+        // Chuẩn hóa cả <font color> do trình duyệt tạo ra thành <span style>.
+        const isFont = node.tagName === 'FONT';
+        const el = document.createElement(isFont ? 'span' : node.tagName.toLowerCase());
+        if (node.tagName === 'SPAN' || isFont) {
+          const color = (node.style && node.style.color) || node.getAttribute('color') || '';
+          const safeColor = color.trim();
+          if (/^#[0-9a-f]{3,8}$/i.test(safeColor) || /^rgba?\([\d., %]+\)$/i.test(safeColor) || /^[a-z]{3,20}$/i.test(safeColor)) {
+            el.style.color = safeColor;
+          }
+        }
+        [...node.childNodes].forEach(child => el.appendChild(clean(child)));
+        return el;
+      }
+      const output = document.createElement('div');
+      [...parsed.body.childNodes].forEach(node => output.appendChild(clean(node)));
+      return output.innerHTML;
+    }
+
+    function passwordNoteText(html) {
+      const el = document.createElement('div');
+      el.innerHTML = sanitizePasswordHtml(html);
+      return el.textContent || '';
+    }
+
+    function addPasswordNote() {
+      const input = document.getElementById('passwordNoteInput');
+      const content = sanitizePasswordHtml(input.innerHTML).trim();
+      if (!passwordNoteText(content).trim()) {
+        alert("Vui lòng nhập nội dung ghi chú!");
+        input.focus();
+        return;
+      }
+      const editingId = document.getElementById('passwordNoteSubmit').dataset.editingId;
+      if (editingId) {
+        const note = passwordNotes.find(item => Number(item.id) === Number(editingId));
+        if (note) note.content = content;
+      } else {
+        passwordNotes.unshift({ id: Date.now(), content, createdAt: new Date().toISOString() });
+      }
+      saveData();
+      cancelPasswordEdit();
+      renderPasswordNotes();
+    }
+
+    function editPasswordNote(id) {
+      const note = passwordNotes.find(item => Number(item.id) === Number(id));
+      if (!note) return;
+      document.getElementById('passwordNoteInput').innerHTML = sanitizePasswordHtml(note.content || escapePasswordNote(note.content || ''));
+      const submit = document.getElementById('passwordNoteSubmit');
+      submit.dataset.editingId = String(id);
+      submit.textContent = 'Lưu thay đổi';
+      document.getElementById('passwordNoteCancel').style.display = 'inline-block';
+      document.getElementById('passwordNoteInput').focus();
+      document.getElementById('passwordNoteInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function cancelPasswordEdit() {
+      document.getElementById('passwordNoteInput').innerHTML = '';
+      const submit = document.getElementById('passwordNoteSubmit');
+      delete submit.dataset.editingId;
+      submit.textContent = '+ Thêm';
+      document.getElementById('passwordNoteCancel').style.display = 'none';
+    }
+
+    function renderPasswordNotes() {
+      const container = document.getElementById('passwordNotesList');
+      if (!container) return;
+      const keyword = (document.getElementById('passwordSearchInput')?.value || '').trim().toLocaleLowerCase('vi');
+      const filteredNotes = passwordNotes.filter(note => passwordNoteText(note.content || '').toLocaleLowerCase('vi').includes(keyword));
+      if (filteredNotes.length === 0) {
+        container.innerHTML = `<div style="color:var(--muted); font-style:italic; text-align:center; padding:10px;">${keyword ? 'Không tìm thấy ghi chú phù hợp.' : 'Chưa có ghi chú nào.'}</div>`;
+        return;
+      }
+      container.innerHTML = filteredNotes.map(note => `
+        <div class="list-item-manage" style="align-items:flex-start; gap:8px;">
+          <div style="overflow-wrap:anywhere; flex:1; min-width:0;">${sanitizePasswordHtml(note.content || '')}</div>
+          <div style="display:flex; gap:5px; flex-shrink:0;">
+            <button class="btn-primary action-btn" style="width:auto; min-width:48px;" onclick="editPasswordNote(${Number(note.id)})">✏️ Sửa</button>
+            <button class="btn-danger action-btn" style="width:auto; min-width:48px;" onclick="deletePasswordNote(${Number(note.id)})">🗑️ Xóa</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapePasswordNote(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    function deletePasswordNote(id) {
+      if (!confirm("Bạn có chắc muốn xóa ghi chú này?")) return;
+      passwordNotes = passwordNotes.filter(note => Number(note.id) !== Number(id));
+      if (Number(document.getElementById('passwordNoteSubmit').dataset.editingId) === Number(id)) cancelPasswordEdit();
+      saveData();
+      renderPasswordNotes();
+    }
+
     /* ===== XUẤT / NHẬP DỮ LIỆU ===== */
     function exportData() {
-      const fullData = { lines, models, lineMachines, autoData, screwData };
+      const fullData = { lines, models, lineMachines, autoData, screwData, passwordNotes };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
