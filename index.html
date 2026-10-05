@@ -1344,34 +1344,124 @@
       savePasswordSelection();
     }
 
-    function sanitizePasswordHtml(html) {
-      const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
-      const allowed = new Set(['B','STRONG','I','EM','U','BR','DIV','P','SPAN','FONT']);
-      function clean(node) {
-        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent);
-        if (node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
-        if (!allowed.has(node.tagName)) {
-          const fragment = document.createDocumentFragment();
-          [...node.childNodes].forEach(child => fragment.appendChild(clean(child)));
-          return fragment;
-        }
-        // Chuẩn hóa cả <font color> do trình duyệt tạo ra thành <span style>.
-        const isFont = node.tagName === 'FONT';
-        const el = document.createElement(isFont ? 'span' : node.tagName.toLowerCase());
-        if (node.tagName === 'SPAN' || isFont) {
-          const color = (node.style && node.style.color) || node.getAttribute('color') || '';
-          const safeColor = color.trim();
-          if (/^#[0-9a-f]{3,8}$/i.test(safeColor) || /^rgba?\([\d., %]+\)$/i.test(safeColor) || /^[a-z]{3,20}$/i.test(safeColor)) {
-            el.style.color = safeColor;
-          }
-        }
-        [...node.childNodes].forEach(child => el.appendChild(clean(child)));
-        return el;
-      }
-      const output = document.createElement('div');
-      [...parsed.body.childNodes].forEach(node => output.appendChild(clean(node)));
-      return output.innerHTML;
+   function sanitizePasswordHtml(html) {
+  const parsed = new DOMParser().parseFromString(
+    String(html || ''),
+    'text/html'
+  );
+
+  const allowed = new Set([
+    'B',
+    'STRONG',
+    'I',
+    'EM',
+    'U',
+    'BR',
+    'DIV',
+    'P',
+    'SPAN',
+    'FONT'
+  ]);
+
+  function clean(node) {
+    // Nội dung chữ
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent);
     }
+
+    // Bỏ qua node không hợp lệ
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return document.createDocumentFragment();
+    }
+
+    // Nếu thẻ không được phép thì chỉ giữ nội dung bên trong
+    if (!allowed.has(node.tagName)) {
+      const fragment = document.createDocumentFragment();
+
+      [...node.childNodes].forEach(child => {
+        fragment.appendChild(clean(child));
+      });
+
+      return fragment;
+    }
+
+    const isFont = node.tagName === 'FONT';
+
+    // FONT chuyển thành SPAN
+    const el = document.createElement(
+      isFont ? 'span' : node.tagName.toLowerCase()
+    );
+
+    /*
+     * Giữ lại định dạng cho SPAN / FONT
+     */
+    if (node.tagName === 'SPAN' || isFont) {
+      const style = node.style || {};
+
+      // MÀU CHỮ
+      const color =
+        style.color ||
+        node.getAttribute('color') ||
+        '';
+
+      if (
+        /^#[0-9a-f]{3,8}$/i.test(color.trim()) ||
+        /^rgba?\([\d., %]+\)$/i.test(color.trim()) ||
+        /^[a-z]{3,20}$/i.test(color.trim())
+      ) {
+        el.style.color = color.trim();
+      }
+
+      // IN ĐẬM
+      const fontWeight = style.fontWeight || '';
+
+      if (
+        fontWeight === 'bold' ||
+        fontWeight === 'bolder' ||
+        fontWeight === '700' ||
+        fontWeight === '800' ||
+        fontWeight === '900'
+      ) {
+        el.style.fontWeight = 'bold';
+      }
+
+      // IN NGHIÊNG
+      const fontStyle = style.fontStyle || '';
+
+      if (
+        fontStyle === 'italic' ||
+        fontStyle === 'oblique'
+      ) {
+        el.style.fontStyle = 'italic';
+      }
+
+      // GẠCH CHÂN
+      const textDecoration =
+        style.textDecoration ||
+        style.textDecorationLine ||
+        '';
+
+      if (textDecoration.includes('underline')) {
+        el.style.textDecoration = 'underline';
+      }
+    }
+
+    // B / STRONG / I / EM / U được giữ nguyên
+    [...node.childNodes].forEach(child => {
+      el.appendChild(clean(child));
+    });
+
+    return el;
+  }
+
+  const output = document.createElement('div');
+
+  [...parsed.body.childNodes].forEach(node => {
+    output.appendChild(clean(node));
+  });
+
+  return output.innerHTML;
+}
 
     function passwordNoteText(html) {
       const el = document.createElement('div');
