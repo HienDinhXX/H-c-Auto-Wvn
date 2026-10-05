@@ -450,7 +450,7 @@
         </div>
       </div>
 
-      <!-- KHỐI 2: SO SÁNH CŨ (READ-ONLY BỘ LỌC RIÊNG) -->
+      <!-- KHỐI 2: SO SÁNH CŨ (NHẬP LIỆU RIÊNG) -->
       <div class="card">
         
         <div class="filter-group">
@@ -668,7 +668,7 @@
       }
     }
 
-    /* ===== TAB 1: HỌC TỰ ĐỘNG & SO SÁNH CŨ ===== */
+    /* ===== TAB 1: AUTOMATION & BẢNG HIỂN THỊ DỮ LIỆU ===== */
     const AUTO_FIELDS = [
       { key: 'congDung', label: 'Công dụng' },
       { key: 'maOc1', label: 'Mã ốc hộp 1' },
@@ -684,7 +684,7 @@
       const autoLine = document.getElementById('autoLineSelect').value;
       const autoModel = document.getElementById('autoModelSelect').value;
       
-      // Tự động đồng bộ sang bộ lọc bên dưới để tiện so sánh mặc định
+      // Đồng bộ bộ lọc bảng dưới theo Line/Model đang chọn
       document.getElementById('oldLineSelect').value = autoLine;
       document.getElementById('oldModelSelect').value = autoModel;
 
@@ -759,7 +759,7 @@
       }, 0);
     }
 
-    // 2. Render Bảng So Sánh Cũ (Read-only, Bộ Lọc Độc Lập)
+    // 2. Render bảng thứ hai, sử dụng chung autoData và cho phép chỉnh sửa
     function renderOldCompareMatrix() {
       const selectedLine = document.getElementById('oldLineSelect').value;
       const selectedModel = document.getElementById('oldModelSelect').value;
@@ -806,7 +806,7 @@
           const val = item ? (item[field.key] || '') : '';
 
           htmlViewOnly += `<td class="col-item">
-            <div class="cell-view-only">${val}</div>
+            <textarea class="cell-input" oninput="autoResizeTextarea(this)" onchange="updateAutoValue('${selectedLine}', '${selectedModel}', '${mName}', '${field.key}', this.value)">${val}</textarea>
           </td>`;
         });
 
@@ -825,7 +825,10 @@
       item[field] = value;
       saveData();
 
-      // Cập nhật lại bảng So Sánh Cũ ngay lập tức nếu đang cùng soi Line/Model này
+      // Hai bảng dùng chung autoData, cập nhật bảng còn lại nếu đang chọn cùng Line/Model
+      const autoLine = document.getElementById('autoLineSelect').value;
+      const autoModel = document.getElementById('autoModelSelect').value;
+      if (autoLine === line && autoModel === model) renderAutoMatrix();
       const oldLine = document.getElementById('oldLineSelect').value;
       const oldModel = document.getElementById('oldModelSelect').value;
       if (oldLine === line && oldModel === model) {
@@ -1091,9 +1094,7 @@
         lineMachines[line][index] = trimmed;
 
         autoData.forEach(d => {
-          if (d.line === line && d.may === oldName) {
-            d.may = trimmed;
-          }
+          if (d.line === line && d.may === oldName) d.may = trimmed;
         });
 
         saveData();
