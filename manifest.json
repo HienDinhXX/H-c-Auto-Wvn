@@ -1,13 +1,13 @@
 {
-  "name" : "Quản lý chi tiêu",
-  "short_name" : "chi tiêu",
+  "name" : "Wvn Auto",
+  "short_name" : "Wvn Auto",
   "start_url" : "./",
   "display" :  "standalone",
   "background_color" : "#f2f2f7",
   "theme_color" : "#007aff",
   "icons" : [ 
   { 
-    "src" : "IMG_0670.jpeg",
+    "src" : "IMG_1658.jpeg",
     "sizes" : "192x192",
     "type" : "image/jpeg"
   }
