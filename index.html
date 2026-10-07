@@ -1592,5 +1592,21 @@
       renderOldCompareMatrix();
     };
   </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('WVN Auto Service Worker đã đăng ký:', registration.scope);
+        })
+        .catch(error => {
+          console.error('Lỗi đăng ký Service Worker:', error);
+        });
+    });
+  }
+</script>
+
+  
 </body>
 </html>
